@@ -9,6 +9,8 @@ RUN apt-get -y update \
     && apt-get upgrade -y \
     && apt-get install -y \
         gfortran \
+        openmpi-bin \
+        libopenmpi-dev \
         liblapack-dev \
         libblas-dev \
         libnetcdf-dev \
@@ -34,7 +36,9 @@ RUN ldconfig
 
 # Put any Python libraries here
 RUN pip install --upgrade pip
-RUN pip install notebook numpy scipy matplotlib ase
+RUN pip install jupyter numpy scipy matplotlib ase pyamg imolecule sphinx
+
+RUN pip install git+https://github.com/libAtoms/matscipy.git
 
 # Julia needs to be installed
 ENV JULIA_PATH /opt/julia
