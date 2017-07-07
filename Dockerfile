@@ -53,4 +53,6 @@ ENV PATH $JULIA_PATH/bin:$PATH
 
 RUN julia -e 'Pkg.add("IJulia")'
 RUN julia -e 'Pkg.add("PyCall")'
+RUN julia -e 'Pkg.add("JuLIP")'
+RUN julia -e 'Pkg.add("PyPlot")'
 
