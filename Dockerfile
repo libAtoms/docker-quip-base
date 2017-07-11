@@ -22,10 +22,11 @@ RUN apt-get -y update \
 # (linear algebra is limited to single core in debs)
 # NUM_THREADS must be set otherwise docker hub build
 # non-parallel version.
-RUN git clone https://github.com/xianyi/OpenBLAS.git /tmp/OpenBLAS
-RUN cd /tmp/OpenBLAS/ \
+RUN git clone https://github.com/xianyi/OpenBLAS.git /tmp/OpenBLAS \
+    && cd /tmp/OpenBLAS/ \
     && make DYNAMIC_ARCH=1 NO_AFFINITY=1 USE_OPENMP=1 NUM_THREADS=32 \
-    && make DYNAMIC_ARCH=1 NO_AFFINITY=1 USE_OPENMP=1 NUM_THREADS=32 install
+    && make DYNAMIC_ARCH=1 NO_AFFINITY=1 USE_OPENMP=1 NUM_THREADS=32 install \
+    && rm -rf /tmp/OpenBLAS
 
 # Make OpenBLAS the default
 RUN update-alternatives --install /usr/lib/libblas.so libblas.so /opt/OpenBLAS/lib/libopenblas.so 1000
@@ -36,7 +37,7 @@ RUN ldconfig
 
 # Put any Python libraries here
 RUN pip install --upgrade pip
-RUN pip install jupyter numpy scipy matplotlib ase pyamg imolecule sphinx
+RUN pip install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg imolecule sphinx
 
 RUN pip install git+https://github.com/libAtoms/matscipy.git
 
