@@ -5,6 +5,7 @@ FROM python:2
 MAINTAINER Tom Daff "tdd20@cam.ac.uk"
 
 # Build tools and deps for QUIP
+# Followed by some useful utilities
 RUN apt-get -y update \
     && apt-get upgrade -y \
     && apt-get install -y \
@@ -16,7 +17,9 @@ RUN apt-get -y update \
         libnetcdf-dev \
         netcdf-bin \
         curl \
-        libzmq3
+        libzmq3 \
+        vim \
+        less
 
 # Custom compilation of OpenBLAS with OpenMP enabled 
 # (linear algebra is limited to single core in debs)
@@ -37,7 +40,8 @@ RUN ldconfig
 
 # Put any Python libraries here
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg imolecule sphinx
+RUN pip install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg \
+                               imolecule sphinx
 
 RUN pip install git+https://github.com/libAtoms/matscipy.git
 
@@ -56,4 +60,21 @@ RUN julia -e 'Pkg.add("IJulia")'
 RUN julia -e 'Pkg.add("PyCall")'
 RUN julia -e 'Pkg.add("JuLIP")'
 RUN julia -e 'Pkg.add("PyPlot")'
+
+# Published GAPs
+
+ENV POTENTIALS_DIR /opt/share/Potentials
+
+ADD http://www.libatoms.org/pub/Home/TungstenGAP/GAP_6.tbz2 ${POTENTIALS_DIR}/GAP/Tungsten
+ADD http://www.libatoms.org/pub/Home/IronGAP/gp33b.tar.gz ${POTENTIALS_DIR}/GAP/Iron
+ADD http://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_water.tgz ${POTENTIALS_DIR}/GAP/Water
+ADD http://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_ch4_h2o.tgz  ${POTENTIALS_DIR}/GAP/Water/CH4
+ADD http://www.libatoms.org/pub/Home/DataRepository/gap_dft_1_2_body_LiH2O.tgz ${POTENTIALS_DIR}/GAP/Water/LiH2O
+ADD http://www.libatoms.org/pub/Home/DataRepository/aC_GAP.tar.gz ${POTENTIALS_DIR}/GAP/Carbon
+ADD http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_Carbon.tar.bz2 ${POTENTIALS_DIR}/GAP/BulkSemiconductor
+ADD http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_Silicon.tar.bz2 ${POTENTIALS_DIR}/GAP/BulkSemiconductor
+ADD http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_Germanium.tar.bz2 ${POTENTIALS_DIR}/GAP/BulkSemiconductor
+ADD http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_GalliumNitride.tar.bz2 ${POTENTIALS_DIR}/GAP/BulkSemiconductor
+
+ADD GAPPotentials.md ${POTENTIALS_DIR}/
 
