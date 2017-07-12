@@ -63,7 +63,7 @@ RUN julia -e 'Pkg.add("PyPlot")'
 
 # Published GAPs
 
-ENV POTENTIALS_DIR /opt/share/Potentials
+ENV POTENTIALS_DIR /opt/share/potentials
 
 ADD http://www.libatoms.org/pub/Home/TungstenGAP/GAP_6.tbz2 ${POTENTIALS_DIR}/GAP/Tungsten
 ADD http://www.libatoms.org/pub/Home/IronGAP/gp33b.tar.gz ${POTENTIALS_DIR}/GAP/Iron
