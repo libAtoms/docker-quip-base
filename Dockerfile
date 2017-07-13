@@ -19,7 +19,9 @@ RUN apt-get -y update \
         curl \
         libzmq3 \
         vim \
-        less
+        less \
+        libxpm-dev \
+        libgsl0-dev
 
 # Custom compilation of OpenBLAS with OpenMP enabled 
 # (linear algebra is limited to single core in debs)
