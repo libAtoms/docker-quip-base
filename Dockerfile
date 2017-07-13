@@ -62,19 +62,30 @@ RUN julia -e 'Pkg.add("JuLIP")'
 RUN julia -e 'Pkg.add("PyPlot")'
 
 # Published GAPs
+# Remote URLs do not get decompressed so pipe through tar
 
 ENV POTENTIALS_DIR /opt/share/potentials
 
-ADD http://www.libatoms.org/pub/Home/TungstenGAP/GAP_6.tbz2 ${POTENTIALS_DIR}/GAP/Tungsten
-ADD http://www.libatoms.org/pub/Home/IronGAP/gp33b.tar.gz ${POTENTIALS_DIR}/GAP/Iron
-ADD http://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_water.tgz ${POTENTIALS_DIR}/GAP/Water
-ADD http://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_ch4_h2o.tgz  ${POTENTIALS_DIR}/GAP/WaterCH4
-ADD http://www.libatoms.org/pub/Home/DataRepository/gap_dft_1_2_body_LiH2O.tgz ${POTENTIALS_DIR}/GAP/WaterLiH2O
-ADD http://www.libatoms.org/pub/Home/DataRepository/aC_GAP.tar.gz ${POTENTIALS_DIR}/GAP/Carbon
-ADD http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_Carbon.tar.bz2 ${POTENTIALS_DIR}/GAP/BulkSemiconductorC
-ADD http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_Silicon.tar.bz2 ${POTENTIALS_DIR}/GAP/BulkSemiconductorSi
-ADD http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_Germanium.tar.bz2 ${POTENTIALS_DIR}/GAP/BulkSemiconductorGe
-ADD http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_GalliumNitride.tar.bz2 ${POTENTIALS_DIR}/GAP/BulkSemiconductorGaN
+RUN curl "http://www.libatoms.org/pub/Home/TungstenGAP/GAP_6.tbz2" \
+    | tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/Tungsten/,"
+RUN curl "http://www.libatoms.org/pub/Home/IronGAP/gp33b.tar.gz" \
+    | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Iron,"
+RUN curl "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_water.tgz" \
+    | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Water,"
+RUN curl "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_ch4_h2o.tgz" \
+    | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/WaterCH4,"
+RUN curl "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_1_2_body_LiH2O.tgz" \
+    | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/WaterLiH2O,"
+RUN curl "http://www.libatoms.org/pub/Home/DataRepository/aC_GAP.tar.gz" \
+    | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Carbon,"
+RUN curl "http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_Carbon.tar.bz2" \
+    | tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/BulkSemiconductorC,"
+RUN curl "http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_Silicon.tar.bz2" \
+    | tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/BulkSemiconductorSi,"
+RUN curl "http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_Germanium.tar.bz2" \
+    | tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/BulkSemiconductorGe,"
+RUN curl "http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_GalliumNitride.tar.bz2" \
+    | tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/BulkSemiconductorGaN,"
 
 ADD GAPPotentials.md ${POTENTIALS_DIR}/
 
