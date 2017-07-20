@@ -28,6 +28,7 @@ Stack contains:
  - OpenMP compiled verison of OpenBLAS as default math libraries
  - Numpy, SciPy, Matplotlib, ase...
  - Julia in ``/opt/julia`` with IJulia, PyCall, PyPlot, JuLIP...
+ - Amber (may need to ``source /opt/amber16/amber.sh``)
 
 Data
 ----

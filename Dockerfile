@@ -20,8 +20,13 @@ RUN apt-get -y update \
         libzmq3 \
         vim \
         less \
+        # AtomEye
         libxpm-dev \
-        libgsl0-dev
+        libgsl0-dev \
+        xterm \
+        # amber
+        csh \
+        flex
 
 # Custom compilation of OpenBLAS with OpenMP enabled 
 # (linear algebra is limited to single core in debs)
@@ -90,4 +95,26 @@ RUN curl "http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_GalliumNit
     | tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/BulkSemiconductorGaN/,"
 
 ADD GAPPotentials.md ${POTENTIALS_DIR}/
+
+# AmberTools (no Amber)
+
+ENV AMBERHOME /opt/amber16/
+
+# Never write the tests to disk (1GB) and remove src (500MB) after compilation
+
+RUN mkdir -p ${AMBERHOME} \
+    && cd ${AMBERHOME} \
+    && curl "http://ambermd.org/cgi-bin/AmberTools17-get.pl?Name=quipbot&Institution=NA&City=NA&State=NA&Country=NA&OS=linux-64" \
+        | tar xj --exclude='*/test/*' --strip-components 1 \
+    && ./update_amber --show-applied-patches \
+    && ./update_amber --update \
+    && ./update_amber --show-applied-patches \
+    && ./configure --with-python `which python` --python-install global -noX11 gnu \
+    && make install \
+    && ./configure --with-python `which python` --python-install global -noX11 -mpi gnu \
+    && make install \
+    && rm -rf ${AMBERHOME}/test ${AMBERHOME}/AmberTools
+
+ENV PATH ${AMBERHOME}/bin:${PATH}
+
 
