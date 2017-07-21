@@ -15,6 +15,10 @@ or use it in your ``FROM`` line. See also:
 To make or request changes, open a merge request or issue in the
 [GitHub repository](https://github.com/libAtoms/docker-quip-base)
 
+Larger software applications are included in the
+[libatomsquip/quip-base-software](https://hub.docker.com/r/libatomsquip/quip-base-software/)
+image in the ``Software`` subdirectory.
+
 Contents
 --------
 
@@ -28,7 +32,6 @@ Stack contains:
  - OpenMP compiled verison of OpenBLAS as default math libraries
  - Numpy, SciPy, Matplotlib, ase...
  - Julia in ``/opt/julia`` with IJulia, PyCall, PyPlot, JuLIP...
- - Amber (may need to ``source /opt/amber16/amber.sh``)
 
 Data
 ----
