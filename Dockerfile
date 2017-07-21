@@ -23,6 +23,7 @@ RUN apt-get -y update \
         curl \
         libzmq3 \
         vim \
+        emacs-nox \
         less \
         # AtomEye
         libxpm-dev \
