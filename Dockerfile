@@ -75,37 +75,46 @@ RUN pip install git+https://github.com/libAtoms/matscipy.git
 ## Julia ##
 ###########
 
+# Set JULIA_PKGDIR to install packages globally
+ENV JULIA_PKGDIR /opt/julia/share/site
+
 # Testing version of Julia. Not added to path by default, but
 # available for testing.
-ENV JULIA_PATH /opt/julia-0.6
+ENV JULIA_PATH /opt/julia/v0.6
 ENV JULIA_VERSION 0.6.0
 
 # Don't store the intermediate file, pipe into tar
-RUN mkdir $JULIA_PATH \
+RUN mkdir -p $JULIA_PATH \
     && cd $JULIA_PATH \
     && curl "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" | tar xz --strip-components 1
 
+RUN ${JULIA_PATH}/bin/julia -e 'Pkg.init()'
 RUN ${JULIA_PATH}/bin/julia -e 'Pkg.add("IJulia")'
 RUN ${JULIA_PATH}/bin/julia -e 'Pkg.add("PyCall")'
 RUN ${JULIA_PATH}/bin/julia -e 'Pkg.add("JuLIP")'
 RUN ${JULIA_PATH}/bin/julia -e 'Pkg.add("PyPlot")'
 
 # Current version of Julia
-ENV JULIA_PATH /opt/julia-0.5
+ENV JULIA_PATH /opt/julia/v0.5
 ENV JULIA_VERSION 0.5.2
 
 # Don't store the intermediate file, pipe into tar
-RUN mkdir $JULIA_PATH \
+RUN mkdir -p $JULIA_PATH \
     && cd $JULIA_PATH \
     && curl "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" | tar xz --strip-components 1
 
 # Add to path as current version
 ENV PATH $JULIA_PATH/bin:$PATH
 
+RUN julia -e 'Pkg.init()'
 RUN julia -e 'Pkg.add("IJulia")'
 RUN julia -e 'Pkg.add("PyCall")'
 RUN julia -e 'Pkg.add("JuLIP")'
 RUN julia -e 'Pkg.add("PyPlot")'
+
+# Add kernelspecs to global Jupyter
+RUN mv /root/.local/share/jupyter/kernels/julia* /usr/local/share/jupyter/kernels/
+
 
 ##########
 ## DATA ##
