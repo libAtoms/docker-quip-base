@@ -97,9 +97,6 @@ RUN ${JULIA_PATH}/bin/julia -e 'Pkg.add("PyPlot")'
 # pre-compilation of installed packages
 RUN ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end'
 
-# make Julia package directories world-writable
-RUN find ${JULIA_PKGDIR} -type d -exec chmod a+w {} \;
-
 # Current version of Julia
 ENV JULIA_PATH /opt/julia/v0.5
 ENV JULIA_VERSION 0.5.2
@@ -117,6 +114,12 @@ RUN julia -e 'Pkg.add("IJulia")'
 RUN julia -e 'Pkg.add("PyCall")'
 RUN julia -e 'Pkg.add("JuLIP")'
 RUN julia -e 'Pkg.add("PyPlot")'
+
+# pre-compilation of installed packages
+RUN ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end'
+
+# make Julia package directories world-writable
+RUN find ${JULIA_PKGDIR} -type d -exec chmod a+w {} \;
 
 # Add kernelspecs to global Jupyter
 RUN mv /root/.local/share/jupyter/kernels/julia* /usr/local/share/jupyter/kernels/
