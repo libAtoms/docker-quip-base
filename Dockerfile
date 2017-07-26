@@ -94,6 +94,12 @@ RUN ${JULIA_PATH}/bin/julia -e 'Pkg.add("PyCall")'
 RUN ${JULIA_PATH}/bin/julia -e 'Pkg.add("JuLIP")'
 RUN ${JULIA_PATH}/bin/julia -e 'Pkg.add("PyPlot")'
 
+# pre-compilation of installed packages
+RUN ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end'
+
+# make Julia package directories world-writable
+RUN find ${JULIA_PKGDIR} -type d -exec chmod a+w {} \;
+
 # Current version of Julia
 ENV JULIA_PATH /opt/julia/v0.5
 ENV JULIA_VERSION 0.5.2
