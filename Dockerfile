@@ -120,6 +120,7 @@ RUN ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = S
 
 # make Julia package directories world-writable
 RUN find ${JULIA_PKGDIR} -type d -exec chmod a+w {} \;
+RUN chmod -R 644 ${JULIA_PKGDIR}/lib
 
 # Add kernelspecs to global Jupyter
 RUN mv /root/.local/share/jupyter/kernels/julia* /usr/local/share/jupyter/kernels/
