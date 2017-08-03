@@ -76,6 +76,8 @@ RUN pip install git+https://github.com/libAtoms/matscipy.git
 ## Julia ##
 ###########
 
+# Default Julia packages should be added in Files/Julia_REQUIRE
+
 # Set JULIA_PKGDIR to install packages globally
 ENV JULIA_PKGDIR /opt/julia/share/site
 
@@ -89,14 +91,15 @@ RUN mkdir -p $JULIA_PATH \
     && cd $JULIA_PATH \
     && curl "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" | tar xz --strip-components 1
 
-RUN ${JULIA_PATH}/bin/julia -e 'Pkg.init()'
-RUN ${JULIA_PATH}/bin/julia -e 'Pkg.add("IJulia")'
-RUN ${JULIA_PATH}/bin/julia -e 'Pkg.add("PyCall")'
-RUN ${JULIA_PATH}/bin/julia -e 'Pkg.add("JuLIP")'
-RUN ${JULIA_PATH}/bin/julia -e 'Pkg.add("PyPlot")'
-
-# pre-compilation of installed packages
-RUN ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end'
+# umask ensures directories are writeable for non-root user
+RUN umask 0000 \
+    && ${JULIA_PATH}/bin/julia -e 'Pkg.init()'
+ADD Files/Julia_REQUIRE $JULIA_PKGDIR/v0.6/REQUIRE
+RUN umask 0000 \
+    && ${JULIA_PATH}/bin/julia -e 'Pkg.resolve()' \
+    # pre-compilation of installed packages
+    && ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end' \
+    && chmod -R a+rw ${JULIA_PKGDIR}/lib
 
 # Current version of Julia
 ENV JULIA_PATH /opt/julia/v0.5
@@ -107,21 +110,18 @@ RUN mkdir -p $JULIA_PATH \
     && cd $JULIA_PATH \
     && curl "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" | tar xz --strip-components 1
 
+# umask ensures directories are writeable for non-root user
+RUN umask 0000 \
+    && ${JULIA_PATH}/bin/julia -e 'Pkg.init()'
+ADD Files/Julia_REQUIRE $JULIA_PKGDIR/v0.5/REQUIRE
+RUN umask 0000 \
+    && ${JULIA_PATH}/bin/julia -e 'Pkg.resolve()' \
+    # pre-compilation of installed packages
+    && ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end' \
+    && chmod -R a+rw ${JULIA_PKGDIR}/lib
+
 # Add to path as current version
 ENV PATH $JULIA_PATH/bin:$PATH
-
-RUN julia -e 'Pkg.init()'
-RUN julia -e 'Pkg.add("IJulia")'
-RUN julia -e 'Pkg.add("PyCall")'
-RUN julia -e 'Pkg.add("JuLIP")'
-RUN julia -e 'Pkg.add("PyPlot")'
-
-# pre-compilation of installed packages
-RUN ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end'
-
-# make Julia package directories world-writable
-RUN find ${JULIA_PKGDIR} -type d -exec chmod a+w {} \;
-RUN chmod -R 644 ${JULIA_PKGDIR}/lib
 
 # Add kernelspecs to global Jupyter
 RUN mv /root/.local/share/jupyter/kernels/julia* /usr/local/share/jupyter/kernels/
