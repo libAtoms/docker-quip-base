@@ -8,7 +8,7 @@ MAINTAINER Tom Daff "tdd20@cam.ac.uk"
 ## Root environment ##
 ######################
 
-RUN cp /etc/skel/.* /root/
+RUN cp /etc/skel/.bash* /etc/skel/.profile /root/
 RUN echo "PS1='docker:\W$ '" >> /root/.bashrc
 
 ###################
