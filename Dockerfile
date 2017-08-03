@@ -149,7 +149,7 @@ RUN curl "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_1_2_body_LiH2O
 RUN curl "http://www.libatoms.org/pub/Home/DataRepository/aC_GAP.tar.gz" \
     | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Carbon/,"
 
-ADD GAPPotentials.md ${POTENTIALS_DIR}/
+ADD Files/GAPPotentials.md ${POTENTIALS_DIR}/
 
 # GPAW data
 # Ensure we don't run interactively
