@@ -153,7 +153,9 @@ ADD GAPPotentials.md ${POTENTIALS_DIR}/
 
 # GPAW data
 # Ensure we don't run interactively
-RUN gpaw install-data --register /opt/share/gpaw
+ENV GPAW_SETUP_VERSION 0.9.20000
+RUN gpaw install-data --no-register --version=${GPAW_SETUP_VERSION} /opt/share/gpaw
+ENV GPAW_SETUP_PATH /opt/share/gpaw/gpaw-setups-${GPAW_SETUP_VERSION}
 
 ##############
 ## Software ##
