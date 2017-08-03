@@ -4,10 +4,11 @@ FROM python:2
 
 MAINTAINER Tom Daff "tdd20@cam.ac.uk"
 
-####################
-# Root environment #
-####################
+######################
+## Root environment ##
+######################
 
+RUN cp /etc/skel/.* /root/
 RUN echo "PS1='docker:\W$ '" >> /root/.bashrc
 
 ###################
@@ -147,16 +148,6 @@ RUN curl "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_1_2_body_LiH2O
     | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/WaterLiH2O/,"
 RUN curl "http://www.libatoms.org/pub/Home/DataRepository/aC_GAP.tar.gz" \
     | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Carbon/,"
-
-# The following are not included, because they are just demo examples, not useful potentials 
-#RUN curl "http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_Carbon.tar.bz2" \
-#    | tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/BulkSemiconductorC/,"
-#RUN curl "http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_Silicon.tar.bz2" \
-#    | tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/BulkSemiconductorSi/,"
-#RUN curl "http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_Germanium.tar.bz2" \
-#    | tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/BulkSemiconductorGe/,"
-#RUN curl "http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_GalliumNitride.tar.bz2" \
-#    | tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/BulkSemiconductorGaN/,"
 
 ADD GAPPotentials.md ${POTENTIALS_DIR}/
 
