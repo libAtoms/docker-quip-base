@@ -47,7 +47,7 @@ To make or request changes, open a merge request or issue in the
 
 Packages should be added to where the usual istallation commands
 (e.g. ``apt-get``, ``pip``, ...) are in the Dockerfile, with the exception
-that Julia pacakes are listed in a separate file ``Files/Julia_REQUIRE``.
+that Julia pacakes are listed at the beginning of the Julia section.
 
 Small software package builds can be added at the end of the Dockerfile.
 Larger software applications are included in the

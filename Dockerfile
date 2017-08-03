@@ -76,7 +76,8 @@ RUN pip install git+https://github.com/libAtoms/matscipy.git
 ## Julia ##
 ###########
 
-# Default Julia packages should be added in Files/Julia_REQUIRE
+# List of Julia packages to install
+ARG JULIA_PACKAGES="IJulia PyCall JuLIP PyPlot ODE Plots"
 
 # Set JULIA_PKGDIR to install packages globally
 ENV JULIA_PKGDIR /opt/julia/share/site
@@ -93,9 +94,8 @@ RUN mkdir -p $JULIA_PATH \
 
 # umask ensures directories are writeable for non-root user
 RUN umask 0000 \
-    && ${JULIA_PATH}/bin/julia -e 'Pkg.init()'
-ADD Files/Julia_REQUIRE $JULIA_PKGDIR/v0.6/REQUIRE
-RUN umask 0000 \
+    && ${JULIA_PATH}/bin/julia -e 'Pkg.init()' \
+    && echo "${JULIA_PACKAGES}" | sed 's/\s\+/\n/g' > $JULIA_PKGDIR/v${JULIA_VERSION%[.-]*}/REQUIRE \
     && ${JULIA_PATH}/bin/julia -e 'Pkg.resolve()' \
     # pre-compilation of installed packages
     && ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end' \
@@ -112,9 +112,8 @@ RUN mkdir -p $JULIA_PATH \
 
 # umask ensures directories are writeable for non-root user
 RUN umask 0000 \
-    && ${JULIA_PATH}/bin/julia -e 'Pkg.init()'
-ADD Files/Julia_REQUIRE $JULIA_PKGDIR/v0.5/REQUIRE
-RUN umask 0000 \
+    && ${JULIA_PATH}/bin/julia -e 'Pkg.init()' \
+    && echo "${JULIA_PACKAGES}" | sed 's/\s\+/\n/g' > $JULIA_PKGDIR/v${JULIA_VERSION%[.-]*}/REQUIRE \
     && ${JULIA_PATH}/bin/julia -e 'Pkg.resolve()' \
     # pre-compilation of installed packages
     && ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end' \
