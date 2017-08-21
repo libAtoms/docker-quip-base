@@ -1,0 +1,1022 @@
+diff -Naur CASTEP-17.21/Examples/Python/ecut-conv.py CASTEP-mod/Examples/Python/ecut-conv.py
+--- CASTEP-17.21/Examples/Python/ecut-conv.py	2017-07-14 17:40:39.000000000 +0100
++++ CASTEP-mod/Examples/Python/ecut-conv.py	2017-08-15 22:04:57.000000000 +0100
+@@ -1,8 +1,8 @@
+ import numpy as np
+-import castep
++import caspytep
+ 
+ from ase.lattice.cubic import Diamond
+-from ase.io.castep import write_castep_cell, write_param
++from ase.io.castep import write_cell, write_param
+ 
+ seed = 'Si8'
+ 
+@@ -11,30 +11,30 @@
+ # FIXME writing then immediately reading is a bit silly, but
+ # cell_read() does a lot more than just reading...
+ 
+-write_castep_cell(seed+'.cell', si, force_write=True)
+-castep.cell.cell_read(seed)
++write_cell(seed+'.cell', si, force_write=True)
++caspytep.cell.cell_read(seed)
+ 
+-current_cell = castep.cell.get_current_cell()
+-castep.ion.ion_read()
++current_cell = caspytep.cell.get_current_cell()
++caspytep.ion.ion_read()
+ 
+ real_charge = float(np.dot(current_cell.num_ions_in_species, current_cell.ionic_charge))
+ real_num_atoms = current_cell.mixture_weight.sum()
+ fixed_cell = current_cell.cell_constraints.max() == 0
+ 
+-castep.parameters.parameters_read(seed, real_charge, real_num_atoms, fixed_cell)
+-current_params = castep.parameters.get_current_params()
++caspytep.parameters.parameters_read(seed, real_charge, real_num_atoms, fixed_cell)
++current_params = caspytep.parameters.get_current_params()
+ 
+-castep.comms.comms_parallel_strategy(current_params.data_distribution,
++caspytep.comms.comms_parallel_strategy(current_params.data_distribution,
+                                      current_params.nbands,
+                                      current_cell.nkpts,
+                                      current_params.num_farms_requested,
+                                      current_params.num_proc_in_smp)
+ 
+-castep.cell.cell_distribute_kpoints()
+-castep.ion.ion_initialise()
++caspytep.cell.cell_distribute_kpoints()
++caspytep.ion.ion_initialise()
+ 
+-castep.parameters.parameters_output(castep.stdout)
+-castep.cell.cell_output(castep.stdout)
++caspytep.parameters.parameters_output(caspytep.stdout)
++caspytep.cell.cell_output(caspytep.stdout)
+ 
+ e0 = current_params.cut_off_energy
+ energy_tol = 1e-4
+@@ -42,20 +42,17 @@
+ energy = []
+ cutoffs = []
+ 
+-import matplotlib.pyplot as plt
+-plt.figure(1)
++#import matplotlib.pyplot as plt
++#plt.figure(1)
+ 
+ while True:
+-    castep.basis.basis_initialise(current_params.cut_off_energy)
++    caspytep.basis.basis_initialise(current_params.cut_off_energy)
+     current_params.fine_gmax = (current_params.fine_grid_scale *
+                                 np.sqrt(2.0*current_params.cut_off_energy))
+-    castep.ion.ion_real_initialise()
+-    main_model = castep.model.Model_State()
+-
+-    (main_model.total_energy, main_model.converged) = \
+-     castep.electronic.electronic_minimisation(main_model.wvfn, main_model.den, main_model.occ,
+-                                               main_model.eigenvalues, main_model.fermi_energy)
+-
++    caspytep.ion.ion_real_initialise()
++    
++    main_model = caspytep.model.model_state()
++    main_model.converged = caspytep.electronic.electronic_minimisation(main_model)
+     if not main_model.converged:
+         raise RuntimeError('Electronic minimisation did not converge!')
+ 
+@@ -68,11 +65,11 @@
+         print 'converged at cutoff', cutoffs[-1]
+         break
+ 
+-    plt.clf()
+-    plt.plot(cutoffs, energy, 'o-')
+-    plt.draw()
++    #plt.clf()
++    #plt.plot(cutoffs, energy, 'o-')
++    #plt.draw()
+ 
+ print 'energy', energy
+ print 'cutoffs', cutoffs
+ 
+-plt.savefig('ecut-conv.pdf')
++#plt.savefig('ecut-conv.pdf')
+diff -Naur CASTEP-17.21/Examples/Python/geom-opt.py CASTEP-mod/Examples/Python/geom-opt.py
+--- CASTEP-17.21/Examples/Python/geom-opt.py	2017-07-14 17:40:39.000000000 +0100
++++ CASTEP-mod/Examples/Python/geom-opt.py	2017-08-15 22:04:57.000000000 +0100
+@@ -1,9 +1,9 @@
+-import castep
++import caspytep
+ from ase.lattice.cubic import Diamond
+ 
+ atoms = Diamond('Si')
+ del atoms[5] # make a vacancy
+-calc = castep.calculator.CastepCalculator(atoms=atoms)
++calc = caspytep.calculator.CasPyTep(atoms=atoms)
+ atoms.set_calculator(calc)
+ 
+ f = atoms.get_forces()
+diff -Naur CASTEP-17.21/Examples/Python/singlepoint.py CASTEP-mod/Examples/Python/singlepoint.py
+--- CASTEP-17.21/Examples/Python/singlepoint.py	2017-07-14 17:40:39.000000000 +0100
++++ CASTEP-mod/Examples/Python/singlepoint.py	2017-08-15 22:04:57.000000000 +0100
+@@ -1,5 +1,5 @@
+ import numpy as np
+-import castep
++import caspytep
+ 
+ from ase.lattice.cubic import Diamond
+ from ase.io.castep import write_cell, write_param
+@@ -11,43 +11,41 @@
+ # cell_read() does a lot more than just reading...
+ 
+ write_cell(seed+'.cell', si, force_write=True)
+-castep.cell.cell_read(seed)
++caspytep.cell.cell_read(seed)
+ 
+-current_cell = castep.cell.get_current_cell()
+-castep.ion.ion_read()
++current_cell = caspytep.cell.get_current_cell()
++caspytep.ion.ion_read()
+ 
+ real_charge = float(np.dot(current_cell.num_ions_in_species, current_cell.ionic_charge))
+ real_num_atoms = current_cell.mixture_weight.sum()
+ fixed_cell = current_cell.cell_constraints.max() == 0
+ 
+-castep.parameters.parameters_read(seed, real_charge, real_num_atoms, fixed_cell)
+-current_params = castep.parameters.get_current_params()
++caspytep.parameters.parameters_read(seed, real_charge, real_num_atoms, fixed_cell)
++current_params = caspytep.parameters.get_current_params()
+ 
+-castep.comms.comms_parallel_strategy(current_params.data_distribution,
++caspytep.comms.comms_parallel_strategy(current_params.data_distribution,
+                                      current_params.nbands,
+                                      current_cell.nkpts,
+                                      current_params.num_farms_requested,
+                                      current_params.num_proc_in_smp)
+ 
+-castep.cell.cell_distribute_kpoints()
++caspytep.cell.cell_distribute_kpoints()
+ 
+-castep.ion.ion_initialise()
++caspytep.ion.ion_initialise()
+ 
+-castep.basis.basis_initialise(current_params.cut_off_energy)
++caspytep.basis.basis_initialise(current_params.cut_off_energy)
+ current_params.fine_gmax = (current_params.fine_grid_scale *
+                             np.sqrt(2.0*current_params.cut_off_energy))
+-castep.ion.ion_real_initialise()
++caspytep.ion.ion_real_initialise()
+ 
+-castep.parameters.parameters_output(castep.stdout)
+-castep.cell.cell_output(castep.stdout)
++caspytep.parameters.parameters_output(caspytep.stdout)
++caspytep.cell.cell_output(caspytep.stdout)
+ 
+-main_model = castep.model.Model_State()
+-(main_model.total_energy, main_model.converged) = \
+- castep.electronic.electronic_minimisation(main_model.wvfn, main_model.den, main_model.occ,
+-                                           main_model.eigenvalues, main_model.fermi_energy)
++main_model = caspytep.model.model_state()
++main_model.converged = caspytep.electronic.electronic_minimisation(main_model)
+ 
+ if main_model.converged:
+-    main_model.found_ground_state_wvfn = True     
++    main_model.found_ground_state_wvfn = True
+     main_model.found_ground_state_den = True
+     main_model.found_forces = False
+     main_model.found_stress = False
+@@ -73,7 +71,7 @@
+ ax.scatter3D(xi, yi, zi, s=200, c='k')
+ 
+ # plot the density with smaller points
+-r_real_grid = castep.basis.get_array_r_real_grid()
++r_real_grid = caspytep.basis.get_array_r_real_grid()
+ x = r_real_grid[0, :]
+ y = r_real_grid[1, :]
+ z = r_real_grid[2, :]
+diff -Naur CASTEP-17.21/Source/Fundamental/cell.f90 CASTEP-mod/Source/Fundamental/cell.f90
+--- CASTEP-17.21/Source/Fundamental/cell.f90	2017-07-14 17:40:39.000000000 +0100
++++ CASTEP-mod/Source/Fundamental/cell.f90	2017-08-15 22:04:57.000000000 +0100
+@@ -252,7 +252,7 @@
+   !--------------------------------------------------------------------------!
+ 
+   ! The cell
+-  type(unit_cell), public, save ::current_cell        ! Declare current_cell
++  type(unit_cell), public, save, target ::current_cell        ! Declare current_cell
+ 
+   !--------------------------------------------------------------------------!
+   ! Private variables                                                        !
+diff -Naur CASTEP-17.21/Source/Python/README CASTEP-mod/Source/Python/README
+--- CASTEP-17.21/Source/Python/README	1970-01-01 01:00:00.000000000 +0100
++++ CASTEP-mod/Source/Python/README	2017-08-15 22:04:57.000000000 +0100
+@@ -0,0 +1,69 @@
++CasPyTep - CASTEP Python interface
++----------------------------------
++
++Author: James Kermode <J.R.Kermode@warwick.ac.uk>
++Original version: August 2014
++Latest updates: August 2017
++
++To compile CASTEP as a Python extension module, you need to install:
++
++ - Python >= 2.6 or 3.x (tested with 2.7.8)
++ - Numpy >= 1.3 (tested with 1.9.1)
++ - A Fortran compiler supported by CASTEP (gfortran, ifort, etc.)
++ - f90wrap package (tested with v0.1.5)
++ - CASTEP source distribution (tested with v17.21)
++
++Optional dependencies:
++ - ASE, Atomic Simulation Environment - for high-level interface
++ - IPython/Jupyter - for notebook examples
++
++To install f90wrap:
++
++   pip install git+https://github.com/jameskermode/f90wrap.git@v0.1.5
++
++Note: in order to build a dynamic library, all static libraries used
++by CASTEP must be compiled with the -fPIC compuiler option, so you must add
++this to FFLAGS_E in obj/${ARCH}.mk before compiling CASTEP.
++This also applies to libxc and spglib.
++
++To compile the CASTEP Python wrappers:
++
++   make python
++
++Note that there is a new call to f90wrap_abort() added to io_abort()
++in Utility/io.F90, meaning that a stub object file f90wrap_stub.o has
++to be additionally linked with the CASTEP executable to get it to
++link correctly. The static libraries libutility.a, libfundamental.a
++and libfunctional.a required to link the Python extension module are
++unaffected.
++
++If all goes smoothly, this will produce a `_caspytep.so` Python
++extension module, and a `caspytep/` directory containing higher-level
++wrapper modules. You can install these somewhere on your Python path
++(default is /usr/local/lib/python2.7/site-packaged) with:
++
++   make python-install
++
++See the tests in the Examples/Python directory, e.g singlepoint.py.
++
++Main Features
++-------------
++
++- Module-level variables available
++- Fortran derived types <--> Python Classes
++- Arrays wrapped (including of derived type)
++    no copying necessary to access data in numerical arrays
++- Documentation strings extracted from source code
++- Dynamic introspection of data and objects
++- io_abort() raises RuntimeError exception
++
++TODO
++----
++
++- Allow current_cell to be updated in place without having to call cell_read():
++    e.g. separate cell_read() into cell_read() and cell_initialise()
++
++- Add support for arrays of derived type as function arguments -
++    needed for, e.g. io_freeform_open() keywords argument [NOT URGENT]
++- Find a workaround to avoid adding 'target' attribute to module elements
++    of derived type [WON'T FIX]
+diff -Naur CASTEP-17.21/Source/Python/caspytep/calculator.py CASTEP-mod/Source/Python/caspytep/calculator.py
+--- CASTEP-17.21/Source/Python/caspytep/calculator.py	1970-01-01 01:00:00.000000000 +0100
++++ CASTEP-mod/Source/Python/caspytep/calculator.py	2017-08-15 22:04:57.000000000 +0100
+@@ -0,0 +1,197 @@
++import tempfile
++import os
++
++import numpy as np
++
++from ase.atoms import Atoms
++from ase.units import Bohr
++from ase.calculators.calculator import Calculator
++from ase.io.castep import write_castep_cell, write_param
++from ase.calculators.castep import CastepParam, import_castep_keywords
++
++import caspytep.comms
++import caspytep.ion
++import caspytep.parameters
++
++from caspytep.io import io_atomic_to_unit
++from caspytep.cell import unit_cell
++from caspytep.util import atoms_to_cell, pad, string
++from caspytep.electronic import electronic_minimisation
++
++EV = io_atomic_to_unit(1.0, 'eV')
++EV_PER_ANG = io_atomic_to_unit(1.0, 'eV') / io_atomic_to_unit(1.0, 'ang')
++EV_PER_ANG3 = io_atomic_to_unit(1.0, 'eV') / io_atomic_to_unit(1.0, 'ang')**3
++
++class CasPyTep(Calculator):
++    implemented_properties=['energy', 'forces', 'stress']
++
++    def __init__(self, restart=None, ignore_bad_restart_file=False,
++        label=None, atoms=None, kpts=None, symmetry_generate=False,
++        castep_command=None, species_pot=None, **kwargs):
++
++        Calculator.__init__(self, restart, ignore_bad_restart_file, label, atoms)
++        self.kpts = kpts
++        self.symmetry_generate = symmetry_generate
++        self.fix_fermi_energy = None
++        self.species_pot = species_pot
++        if atoms is None:
++            raise RuntimeError('initial atoms argument must be present')
++        self.current_cell=atoms_to_cell(atoms,
++                                        kpts=self.kpts,
++                                        symmetry_generate=self.symmetry_generate,
++                                        species_pot=self.species_pot)
++        #caspytep.cell.set_current_cell(self.current_cell)
++        caspytep.ion.ion_read()
++        real_charge=float(np.dot(self.current_cell.num_ions_in_species,
++                                 self.current_cell.ionic_charge))
++        real_num_atoms=self.current_cell.mixture_weight.sum()
++        fixed_cell=self.current_cell.cell_constraints.max() == 0
++        tmp_param=tempfile.NamedTemporaryFile(suffix='.param', dir=os.getcwd(), delete=False)
++        castep_keywords = import_castep_keywords(castep_command)
++        params=CastepParam(castep_keywords)
++        for key, value in kwargs.iteritems():
++            setattr(params, key, value)
++        write_param(tmp_param.name, params, force_write=True)
++        tmp_param.close()
++        stem=os.path.splitext(os.path.basename(tmp_param.name))[0]
++        caspytep.parameters.parameters_read(stem, real_charge, real_num_atoms, fixed_cell)
++        os.unlink(tmp_param.name)
++        self.parameters=caspytep.parameters.get_current_params()
++        caspytep.comms.comms_parallel_strategy(self.parameters.data_distribution,
++                                             self.parameters.nbands,
++                                             self.current_cell.nkpts,
++                                             self.parameters.num_farms_requested,
++                                             self.parameters.num_proc_in_smp)
++        caspytep.cell.cell_distribute_kpoints()
++        caspytep.ion.ion_initialise()
++        caspytep.basis.basis_initialise(self.parameters.cut_off_energy)
++        self.parameters.fine_gmax = self.parameters.fine_grid_scale * np.sqrt(2.0 * self.parameters.cut_off_energy)
++        caspytep.ion.ion_real_initialise()
++        self.model = caspytep.model.model_state()
++
++    def calculate(self, atoms, properties, system_changes):
++        Calculator.calculate(self, atoms, properties, system_changes)
++        if system_changes:
++            if 'energy' in self.results:
++                del self.results['energy']
++            if 'forces' in self.results:
++                del self.results['forces']
++            if 'stress' in self.results:
++                del self.results['stress']
++        if 'energy' not in self.results:
++            self.current_cell = atoms_to_cell(atoms, kpts=self.kpts,
++                                              symmetry_generate=self.symmetry_generate,
++                                              species_pot=self.species_pot)
++            #caspytep.cell.cell_copy(new_cell, self.current_cell)
++            caspytep.cell.cell_distribute_kpoints()
++            self.model.wvfn.have_beta_phi=False
++            caspytep.wave.wave_sorthonormalise(self.model.wvfn)
++            caspytep.ion.ion_read()
++            self.model.converged = electronic_minimisation(self.model)
++            self.results['energy']=caspytep.io.io_atomic_to_unit(self.model.total_energy, 'eV')
++        if 'forces' in properties and 'forces' not in self.results:
++            forces=np.zeros((3, self.current_cell.num_ions), order='F')
++            caspytep.firstd.firstd_calculate_forces(self.model, forces)
++            self.results['forces'] = forces.T
++            self.results['forces'][...] *= EV_PER_ANG
++        if 'stress' in properties and 'stress' not in self.results:
++            raise NotImplementedError
++
++    def get_number_of_bands(self):
++        """Return the number of bands."""
++        return self.parameters.nband
++
++    def get_xc_functional(self):
++        """Return the XC-functional identifier.
++
++        'LDA', 'PBE', ..."""
++        return string(self.parameters.xc_definition)
++
++    def get_bz_k_points(self):
++        """Return all the k-points in the 1. Brillouin zone.
++
++        The coordinates are relative to reciprocal lattice vectors."""
++        return self.current_cell.kpoints.copy().T
++
++    def get_number_of_spins(self):
++        """Return the number of spins in the calculation.
++
++        Spin-paired calculations: 1, spin-polarized calculation: 2."""
++        return self.model.wvfn.nspins
++
++    def get_spin_polarized(self):
++        """Is it a spin-polarized calculation?"""
++        return self.model.wvfn.nspins == 1
++
++    def get_ibz_k_points(self):
++        """Return k-points in the irreducible part of the Brillouin zone.
++
++        The coordinates are relative to reciprocal latice vectors."""
++        raise NotImplementedError
++
++    def get_k_point_weights(self):
++        """Weights of the k-points.
++
++        The sum of all weights is one."""
++        return self.current_cell.kpoint_weights.copy()
++
++    def get_pseudo_density(self, spin=None, pad=True):
++        """Return pseudo-density array.
++
++        If *spin* is not given, then the total density is returned.
++        Otherwise, the spin up or down density is returned (spin=0 or
++        1)."""
++        if spin is not None:
++            raise NotImplementedError
++        else:
++            rho = self.model.den.real_charge.copy()
++            return rho.reshape(self.get_number_of_grid_points())
++
++    def get_effective_potential(self, spin=0, pad=True):
++        """Return pseudo-effective-potential array."""
++        raise NotImplementedError
++
++    def get_pseudo_wave_function(self, band=0, kpt=0, spin=0, spinor_component=0,
++                                 broadcast=True, pad=True):
++        """Return pseudo-wave-function array."""
++        return self.model.wvfn.coeffs[:, spinor_component, band, kpt, spin].copy()
++
++    def get_eigenvalues(self, kpt=0, spin=0):
++        """Return eigenvalue array."""
++        eig = self.model.eigenvalues[:, kpt, spin].copy()
++        eig[:] *= caspytep.io.io_atomic_to_unit(1.0, 'ev')
++        return eig
++
++    def get_occupation_numbers(self, kpt=0, spin=0):
++        """Return occupation number array."""
++        return self.model.occ[:, kpt, spin].copy()
++
++    def get_fermi_level(self, spin=0):
++        """Return the Fermi level(s)"""
++        ef = self.model.fermi_energy.copy()
++        ef[:] *= caspytep.io.io_atomic_to_unit(1.0, 'ev')
++        return ef[spin]
++
++    def initial_wannier(self, initialwannier, kpointgrid, fixedstates, edf, spin, nbands):
++        """Initial guess for the shape of wannier functions.
++
++        Use initial guess for wannier orbitals to determine rotation
++        matrices U and C.
++        """
++        raise NotImplementedError
++
++    def get_wannier_localization_matrix(self, nbands, dirG, kpoint, nextkpoint, G_I, spin):
++        """Calculate integrals for maximally localized Wannier functions."""
++        raise NotImplementedError
++
++    def get_magnetic_moment(self, atoms=None):
++        """Return the total magnetic moment."""
++        raise NotImplementedError
++
++    def get_number_of_grid_points(self):
++        """Return the shape of arrays."""
++        return (caspytep.basis.get_ngx_fine(),
++                caspytep.basis.get_ngy_fine(),
++                caspytep.basis.get_ngz_fine())
++
++CastepCalculator = CasPyTep # backwards compatibility
+diff -Naur CASTEP-17.21/Source/Python/caspytep/util.py CASTEP-mod/Source/Python/caspytep/util.py
+--- CASTEP-17.21/Source/Python/caspytep/util.py	1970-01-01 01:00:00.000000000 +0100
++++ CASTEP-mod/Source/Python/caspytep/util.py	2017-08-15 22:04:57.000000000 +0100
+@@ -0,0 +1,154 @@
++from __future__ import absolute_import, print_function
++
++import ctypes
++import os
++import sys
++import tempfile
++import time
++from contextlib import contextmanager
++from io import SEEK_SET
++
++import numpy as np
++
++from ase.atoms import Atoms
++from ase.units import Bohr
++from ase.calculators.castep import CastepCell, import_castep_keywords
++from ase.io.castep import write_castep_cell
++
++from caspytep.cell import (unit_cell, cell_read, cell_distribute_kpoints,
++                           get_current_cell, set_current_cell)
++
++def pad(s, length):
++    a = [' '] * length
++    a[0:len(s)] = s
++    return a
++
++def string(a):
++    return ''.join(a[:, 0]).strip()
++
++def _atoms_to_cell(at):
++    """
++    Convert from ase.atoms.Atoms instance to unit_cell
++    """
++    sp = at.get_chemical_symbols()
++    uniq_sp = set(sp)
++    num_sp = len(uniq_sp)
++    num_ions_in_species = [ sp.count(usp) for usp in uniq_sp ]
++    cell = unit_cell(num_sp, max(num_ions_in_species))
++    cell.num_ions_in_species[:] = num_ions_in_species
++    cell.num_species = num_sp
++    cell.num_ions = cell.num_ions_in_species.sum()
++    cell.real_lattice[...] = at.get_cell() / Bohr
++    cell.recip_lattice()
++    cell.calculate_volume()
++    scaled_positions = at.get_scaled_positions()
++    sp_len = cell.species_symbol.shape[0]
++    sp = np.array(sp)
++    for i, this_sp in enumerate(uniq_sp):
++        cell.species_symbol[:, i] = pad(this_sp, sp_len)
++        sp_pos = scaled_positions[sp == this_sp, :]
++        cell.ionic_positions[:, :cell.num_ions_in_species[i], i] = sp_pos.T
++
++    cell.ionic_velocities[...] = 0.0
++    cell.initial_magnetic_moment[...] = 0.0
++    cell.initial_magnetisation_dir[...] = 0.0
++    cell.mixture_weight[:] = 1.0
++    cell.atom_init_magmom = 0
++    cell.atom_init_spin = 0
++    k = 0
++    for i in range(cell.num_species):
++        for j in range(cell.num_ions_in_species[i]):
++            cell.ion_pack_species[k] = i
++            cell.ion_pack_index[k] = j
++            k = k + 1
++
++    cell.supercell_matrix[...] = np.diag([1, 1, 1])
++    cell.supercell_ion_index[:] = range(1, cell.num_ions + 1)
++    return cell
++
++
++def atoms_to_cell(atoms, castep_command=None, **kwargs):
++    """
++    Convert ase.atoms.Atoms to unit_cell
++
++    Work around that requires writing a temporary .cell file
++    """
++    tmp_cell = tempfile.NamedTemporaryFile(suffix='.cell', dir=os.getcwd(), delete=False)
++    castep_keywords = import_castep_keywords(castep_command)
++    castep_cell = CastepCell(castep_keywords)
++    for key, value in kwargs.iteritems():
++        if key == 'kpts':
++            if value is not None:
++                castep_cell.__setattr__('kpoint_mp_grid',
++                                        '%s %s %s' % tuple(value))
++        elif key == 'symmetry_generate':
++            if value is not None and value:
++                castep_cell.__setattr__(key, value)
++        elif value is not None:
++            castep_cell.__setattr__(key, value)
++
++    write_castep_cell(tmp_cell, atoms,
++                      castep_cell=castep_cell, force_write=True)
++    tmp_cell.close()
++    #prev_cell = get_current_cell()
++    stem = os.path.splitext(os.path.basename(tmp_cell.name))[0]
++    cell_read(stem)
++    os.unlink(tmp_cell.name)
++    #cell = get_current_cell()
++    #set_current_cell(prev_cell)
++    #cell_distribute_kpoints()
++    return get_current_cell()
++
++
++def cell_to_atoms(cell):
++    """
++    Convert unit_cell to ase.atoms.Atoms instance
++    """
++    uniq_sp = []
++    symbols = []
++    scaled_positions = []
++    for i in range(cell.num_species):
++        sp = ''.join(cell.species_symbol[:, i]).strip()
++        symbols += [sp] * cell.num_ions_in_species[i]
++        scaled_positions.extend(cell.ionic_positions[:, :, i].T)
++
++    at = Atoms(symbols, scaled_positions=scaled_positions, cell=cell.real_lattice, pbc=True)
++    return at
++
++
++libc = ctypes.CDLL(None)
++try:
++    c_stdout = ctypes.c_void_p.in_dll(libc, 'stdout')
++except ValueError:
++    c_stdout = ctypes.c_void_p.in_dll(libc, '__stdoutp')
++
++@contextmanager
++def capture_stdout():
++    """
++    Capture Fortran/C stdout stream and write to Python sys.stdout
++
++    Useful to save output when embedding Castep calculations in a
++    Jupyter notebook. Example usage::
++
++        calc = caspytep.calculator.CastepCalculator()
++        atoms.set_calculator(calc)
++        with caspytep.util.capture_stdout():
++            atoms.get_potential_energy()
++    """
++    original_stdout_fd = sys.__stdout__.fileno()
++    saved_stdout_fd = os.dup(original_stdout_fd)
++    try:
++        tfile = tempfile.TemporaryFile(mode='w+b')
++        libc.fflush(c_stdout)
++        os.dup2(tfile.fileno(), original_stdout_fd)
++
++        yield
++
++        libc.fflush(c_stdout)
++        os.dup2(saved_stdout_fd, original_stdout_fd)
++        tfile.flush()
++        tfile.seek(0, SEEK_SET)
++        sys.stdout.write(tfile.read())
++    finally:
++        tfile.close()
++        os.close(saved_stdout_fd)
+diff -Naur CASTEP-17.21/Source/Python/caspytep/util.py~ CASTEP-mod/Source/Python/caspytep/util.py~
+--- CASTEP-17.21/Source/Python/caspytep/util.py~	1970-01-01 01:00:00.000000000 +0100
++++ CASTEP-mod/Source/Python/caspytep/util.py~	2017-08-15 22:04:57.000000000 +0100
+@@ -0,0 +1,154 @@
++from __future__ import absolute_import, print_function
++
++import ctypes
++import os
++import sys
++import tempfile
++import time
++from contextlib import contextmanager
++from io import SEEK_SET
++
++import numpy as np
++
++from ase.atoms import Atoms
++from ase.units import Bohr
++from ase.calculators.castep import CastepCell, import_castep_keywords
++from ase.io.castep import write_castep_cell
++
++from castep.cell import (Unit_Cell, cell_read,
++                         #recip_lattice, calculate_volume,
++                         get_current_cell, set_current_cell)
++
++def pad(s, length):
++    a = [' '] * length
++    a[0:len(s)] = s
++    return a
++
++def string(a):
++    return ''.join(a[:, 0]).strip()
++
++def _atoms_to_cell(at):
++    """
++    Convert from ase.atoms.Atoms instance to Unit_Cell
++    """
++    sp = at.get_chemical_symbols()
++    uniq_sp = set(sp)
++    num_sp = len(uniq_sp)
++    num_ions_in_species = [ sp.count(usp) for usp in uniq_sp ]
++    cell = Unit_Cell(num_sp, max(num_ions_in_species))
++    cell.num_ions_in_species[:] = num_ions_in_species
++    cell.num_species = num_sp
++    cell.num_ions = cell.num_ions_in_species.sum()
++    cell.real_lattice[...] = at.get_cell() / Bohr
++    cell.recip_lattice()
++    cell.calculate_volume()
++    scaled_positions = at.get_scaled_positions()
++    sp_len = cell.species_symbol.shape[0]
++    sp = np.array(sp)
++    for i, this_sp in enumerate(uniq_sp):
++        cell.species_symbol[:, i] = pad(this_sp, sp_len)
++        sp_pos = scaled_positions[sp == this_sp, :]
++        cell.ionic_positions[:, :cell.num_ions_in_species[i], i] = sp_pos.T
++
++    cell.ionic_velocities[...] = 0.0
++    cell.initial_magnetic_moment[...] = 0.0
++    cell.initial_magnetisation_dir[...] = 0.0
++    cell.mixture_weight[:] = 1.0
++    cell.atom_init_magmom = 0
++    cell.atom_init_spin = 0
++    k = 0
++    for i in range(cell.num_species):
++        for j in range(cell.num_ions_in_species[i]):
++            cell.ion_pack_species[k] = i
++            cell.ion_pack_index[k] = j
++            k = k + 1
++
++    cell.supercell_matrix[...] = np.diag([1, 1, 1])
++    cell.supercell_ion_index[:] = range(1, cell.num_ions + 1)
++    return cell
++
++
++def atoms_to_cell(atoms, castep_command=None, **kwargs):
++    """
++    Convert ase.atoms.Atoms to Unit_Cell
++    
++    Work around that requires writing a temporary .cell file
++    """
++    tmp_cell = tempfile.NamedTemporaryFile(suffix='.cell', dir=os.getcwd(), delete=False)
++    castep_keywords = import_castep_keywords(castep_command)
++    castep_cell = CastepCell(castep_keywords)
++    for key, value in kwargs.iteritems():
++        if key == 'kpts':
++            if value is not None:
++                castep_cell.__setattr__('kpoint_mp_grid', 
++                                        '%s %s %s' % tuple(value))
++        elif key == 'symmetry_generate':
++            if value is not None and value:
++                castep_cell.__setattr__(key, value)
++        else:
++            castep_cell.__setattr__(key, value)
++
++    write_castep_cell(tmp_cell, atoms,
++                      castep_cell=castep_cell, force_write=True)
++    tmp_cell.close()
++    prev_cell = get_current_cell()
++    stem = os.path.splitext(os.path.basename(tmp_cell.name))[0]
++    cell_read(stem)
++    os.unlink(tmp_cell.name)
++    cell = get_current_cell()
++    set_current_cell(prev_cell)
++    return cell
++
++
++def cell_to_atoms(cell):
++    """
++    Convert Unit_Cell to ase.atoms.Atoms instance 
++    """
++    uniq_sp = []
++    symbols = []
++    scaled_positions = []
++    for i in range(cell.num_species):
++        sp = ''.join(cell.species_symbol[:, i]).strip()
++        symbols += [sp] * cell.num_ions_in_species[i]
++        scaled_positions.extend(cell.ionic_positions[:, :, i].T)
++
++    at = Atoms(symbols, scaled_positions=scaled_positions, cell=cell.real_lattice, pbc=True)
++    return at
++
++
++libc = ctypes.CDLL(None)
++try:
++    c_stdout = ctypes.c_void_p.in_dll(libc, 'stdout')
++except ValueError:
++    c_stdout = ctypes.c_void_p.in_dll(libc, '__stdoutp')
++
++@contextmanager 
++def capture_stdout():
++    """
++    Capture Fortran/C stdout stream and write to Python sys.stdout
++
++    Useful to save output when embedding Castep calculations in a 
++    Jupyter notebook. Example usage::
++
++        calc = castep.calculator.CastepCalculator()
++        atoms.set_calculator(calc)
++        with castep.util.capture_stdout():
++            atoms.get_potential_energy()
++    """
++    original_stdout_fd = sys.__stdout__.fileno()
++    saved_stdout_fd = os.dup(original_stdout_fd)   
++    try:
++        tfile = tempfile.TemporaryFile(mode='w+b')
++        libc.fflush(c_stdout)
++        os.dup2(tfile.fileno(), original_stdout_fd)
++    
++        yield
++        
++        libc.fflush(c_stdout)        
++        os.dup2(saved_stdout_fd, original_stdout_fd)
++        tfile.flush()
++        tfile.seek(0, SEEK_SET)
++        sys.stdout.write(tfile.read())
++    finally:
++        tfile.close()
++        os.close(saved_stdout_fd)
+diff -Naur CASTEP-17.21/Source/Python/init.py CASTEP-mod/Source/Python/init.py
+--- CASTEP-17.21/Source/Python/init.py	1970-01-01 01:00:00.000000000 +0100
++++ CASTEP-mod/Source/Python/init.py	2017-08-15 22:04:57.000000000 +0100
+@@ -0,0 +1,28 @@
++# package initialisation code
++
++import atexit
++
++caspytep.comms.comms_initialise()
++seed, status, iomsg = caspytep.io.io_initialise(python=True)
++stdout = caspytep.io.get_stdout()
++stderr = caspytep.io.get_stderr()
++build_info = caspytep.buildinfo.get_build_info()
++status = caspytep.license.license_checkout(1, build_info)
++caspytep.license.setup_traps()
++rndm_seed = 0
++caspytep.algor.algor_set_random_seed(rndm_seed)
++caspytep.trace.trace_init(stderr)
++
++def castep_finalise():
++    caspytep.trace.trace_finalise()
++    caspytep.license.license_checkin()
++    caspytep.io.io_finalise()
++    caspytep.comms.comms_finalise()
++
++atexit.register(castep_finalise)
++
++# import custom Python modules
++import caspytep.util
++import caspytep.calculator
++
++# end of package installation
+diff -Naur CASTEP-17.21/Source/Python/init.py~ CASTEP-mod/Source/Python/init.py~
+--- CASTEP-17.21/Source/Python/init.py~	1970-01-01 01:00:00.000000000 +0100
++++ CASTEP-mod/Source/Python/init.py~	2017-08-15 22:04:57.000000000 +0100
+@@ -0,0 +1,29 @@
++# package initialisation code
++
++import atexit
++
++castep.comms.comms_initialise()
++seed, status = castep.io.io_initialise(python=True)
++stdout = castep.io.get_stdout()
++stderr = castep.io.get_stderr()
++build_info = castep.buildinfo.get_build_info()
++status = castep.license.license_checkout(1, build_info)
++castep.license.setup_traps()
++rndm_seed = 0
++castep.algor.algor_set_random_seed(rndm_seed)
++castep.trace.trace_init(stderr)
++
++def castep_finalise():
++    castep.trace.trace_finalise()
++    castep.license.license_checkin()
++    castep.io.io_finalise()
++    castep.comms.comms_finalise()
++
++atexit.register(castep_finalise)
++
++# import custom Python modules
++import castep.util
++import castep.calculator
++
++# end of package installation
++
+diff -Naur CASTEP-17.21/Source/Python/kind_map CASTEP-mod/Source/Python/kind_map
+--- CASTEP-17.21/Source/Python/kind_map	1970-01-01 01:00:00.000000000 +0100
++++ CASTEP-mod/Source/Python/kind_map	2017-08-15 22:04:57.000000000 +0100
+@@ -0,0 +1,11 @@
++{
++ 'real':     {'8':   'double',
++              'dp':  'double'},
++ 'complex' : {'8':   'complex_double',
++              'dp':  'complex_double'},
++ 'integer' : {'':       'int',
++ 	          'bit_32': 'int',
++              'bit_64': 'long_long',
++	          '8':      'long_long',
++	          'dp':     'long_long' }
++}
+diff -Naur CASTEP-17.21/Source/Python/short_names CASTEP-mod/Source/Python/short_names
+--- CASTEP-17.21/Source/Python/short_names	1970-01-01 01:00:00.000000000 +0100
++++ CASTEP-mod/Source/Python/short_names	2017-08-15 22:04:57.000000000 +0100
+@@ -0,0 +1,7 @@
++# dictionary mapping full names of derived types to abbreviations used when naming methods
++{
++  'unit_cell': 'cell', 
++  'electron_density': 'density',
++  'model_state': 'model',
++  'wavefunction': 'wave'
++}
+\ No newline at end of file
+diff -Naur CASTEP-17.21/Source/Python/string_lengths CASTEP-mod/Source/Python/string_lengths
+--- CASTEP-17.21/Source/Python/string_lengths	1970-01-01 01:00:00.000000000 +0100
++++ CASTEP-mod/Source/Python/string_lengths	2017-08-15 22:04:57.000000000 +0100
+@@ -0,0 +1,2 @@
++{
++}
+\ No newline at end of file
+diff -Naur CASTEP-17.21/obj/Makefile.python CASTEP-mod/obj/Makefile.python
+--- CASTEP-17.21/obj/Makefile.python	2017-07-14 17:40:39.000000000 +0100
++++ CASTEP-mod/obj/Makefile.python	2017-08-15 22:04:57.000000000 +0100
+@@ -5,16 +5,16 @@
+ FPP = gfortran -E -cpp
+ CFLAGS = -fPIC
+ 
+-UTILITY_SOURCES = constants.F90 algor.F90 comms.serial.F90 io.F90 trace.F90 license.F90
++UTILITY_SOURCES = constants.F90 algor.F90 comms.serial.F90 io.F90 trace.f90 license.F90
+ UTILITY_FILES = $(addprefix ../../../Source/Utility/,${UTILITY_SOURCES})
+ 
+ BUILDINFO_SOURCES = buildinfo.f90
+ BUILDINFO_FILES = $(addprefix ../,${BUILDINFO_SOURCES})
+ 
+-FUNDAMENTAL_SOURCES = parameters.F90 cell.F90 basis.F90 ion.F90 density.F90 wave.F90
++FUNDAMENTAL_SOURCES = parameters.f90 cell.f90 basis.f90 ion.f90 density.f90 wave.f90
+ FUNDAMENTAL_FILES = $(addprefix ../../../Source/Fundamental/,${FUNDAMENTAL_SOURCES})
+ 
+-FUNCTIONAL_SOURCES = model.F90 electronic.F90 firstd.F90 dm.F90
++FUNCTIONAL_SOURCES = model.f90 electronic.f90 firstd.f90 dm.f90
+ FUNCTIONAL_FILES = $(addprefix ../../../Source/Functional/,${FUNCTIONAL_SOURCES})
+ 
+ WRAP_SOURCES = ${UTILITY_SOURCES} ${BUILDINFO_SOURCES} ${FUNDAMENTAL_SOURCES} ${FUNCTIONAL_SOURCES}
+@@ -24,7 +24,7 @@
+ 
+ F90WRAP_FILES = $(addprefix f90wrap_,${WRAP_FPP_FILES}) f90wrap_toplevel.f90
+ 
+-PY_INSTALL_DIR = ${HOME}/lib/python
++PY_INSTALL_DIR = /usr/local/lib/python2.7/site-packages/
+ 
+ ###
+ 
+@@ -44,20 +44,20 @@
+ 	done
+ 
+ ${F90WRAP_FILES}:  ${WRAP_FPP_FILES} ../libfunctional.a ../libfundamental.a ../libutility.a
+-	f90wrap -v -m castep ${WRAP_FPP_FILES} -k $(PY_SRC_DIR)/kind_map \
++	f90wrap -v -m caspytep ${WRAP_FPP_FILES} -k $(PY_SRC_DIR)/kind_map \
+ 	   -s $(PY_SRC_DIR)/string_lengths --short-names $(PY_SRC_DIR)/short_names -P \
+ 	   -a f90wrap_abort --init-file $(PY_SRC_DIR)/init.py
+-	cp -r ${PY_SRC_DIR}/castep/* castep
++	cp -r ${PY_SRC_DIR}/caspytep/* caspytep
+ 
+ _castep.so: ${F90WRAP_FILES}
+ 	f2py-f90wrap --build-dir . --f90flags="-ff2c -fno-second-underscore"\
+-          -c -m _castep ${F90WRAP_FILES} \
++          -c -m _caspytep ${F90WRAP_FILES} \
+ 	  -I.. \
+ 	  -L.. \
+ 	  -lfunctional -lfundamental -lutility \
+-	  -lxcf90 -lxc -lsymspg \
+-	   ${MATH_LIBS} -lgomp -lgfortran
++	  ${EXTRA_LIBS} \
++	  -L${MATHLIBDIR} ${MATH_LIBS} -lgomp -lgfortran
+ 
+ python-install:
+-	cp -r castep ${PY_INSTALL_DIR}
+-	cp _castep.so ${PY_INSTALL_DIR}
+\ No newline at end of file
++	cp -r caspytep ${PY_INSTALL_DIR}
++	cp _caspytep.so ${PY_INSTALL_DIR}
+diff -Naur CASTEP-17.21/obj/Makefile.python~ CASTEP-mod/obj/Makefile.python~
+--- CASTEP-17.21/obj/Makefile.python~	1970-01-01 01:00:00.000000000 +0100
++++ CASTEP-mod/obj/Makefile.python~	2017-08-15 22:04:57.000000000 +0100
+@@ -0,0 +1,63 @@
++include ../../$(ARCH).mk
++
++PY_SRC_DIR := ../../../Source/Python
++
++FPP = gfortran -E -cpp
++CFLAGS = -fPIC
++
++UTILITY_SOURCES = constants.F90 algor.F90 comms.serial.F90 io.F90 trace.f90 license.F90
++UTILITY_FILES = $(addprefix ../../../Source/Utility/,${UTILITY_SOURCES})
++
++BUILDINFO_SOURCES = buildinfo.f90
++BUILDINFO_FILES = $(addprefix ../,${BUILDINFO_SOURCES})
++
++FUNDAMENTAL_SOURCES = parameters.f90 cell.f90 basis.f90 ion.f90 density.f90 wave.f90
++FUNDAMENTAL_FILES = $(addprefix ../../../Source/Fundamental/,${FUNDAMENTAL_SOURCES})
++
++FUNCTIONAL_SOURCES = model.f90 electronic.f90 firstd.f90 dm.f90
++FUNCTIONAL_FILES = $(addprefix ../../../Source/Functional/,${FUNCTIONAL_SOURCES})
++
++WRAP_SOURCES = ${UTILITY_SOURCES} ${BUILDINFO_SOURCES} ${FUNDAMENTAL_SOURCES} ${FUNCTIONAL_SOURCES}
++WRAP_FILES = ${UTILITY_FILES} ${BUILDINFO_FILES} ${FUNDAMENTAL_FILES} ${FUNCTIONAL_FILES}
++
++WRAP_FPP_FILES = $(addsuffix .f90,$(basename ${WRAP_SOURCES}))
++
++F90WRAP_FILES = $(addprefix f90wrap_,${WRAP_FPP_FILES}) f90wrap_toplevel.f90
++
++PY_INSTALL_DIR = /usr/local/lib/python2.7/site-packages/
++
++###
++
++.PHONY: python python-clean python-install
++
++python: _castep.so
++
++python-clean:
++	-rm _castep.so ${F90WRAP_FILES} ${WRAP_FPP_FILES}
++	-rm -r castep
++	-rm -r f90wrap_*.o
++	-rm -rf src.*
++
++${WRAP_FPP_FILES}: ${WRAP_FILES}
++	for f in ${WRAP_FILES}; do \
++	  ${FPP} $$f > $$(basename $${f%.*}).f90 ; \
++	done
++
++${F90WRAP_FILES}:  ${WRAP_FPP_FILES} ../libfunctional.a ../libfundamental.a ../libutility.a
++	f90wrap -v -m castep ${WRAP_FPP_FILES} -k $(PY_SRC_DIR)/kind_map \
++	   -s $(PY_SRC_DIR)/string_lengths --short-names $(PY_SRC_DIR)/short_names -P \
++	   -a f90wrap_abort --init-file $(PY_SRC_DIR)/init.py
++	cp -r ${PY_SRC_DIR}/castep/* castep
++
++_castep.so: ${F90WRAP_FILES}
++	f2py-f90wrap --build-dir . --f90flags="-ff2c -fno-second-underscore"\
++          -c -m _castep ${F90WRAP_FILES} \
++	  -I.. \
++	  -L.. \
++	  -lfunctional -lfundamental -lutility \
++	  /opt/spglib-1.9.9/_build/libsymspg.a \
++	  -L${MATHLIBDIR} ${MATH_LIBS} -lgomp -lgfortran
++
++python-install:
++	cp -r castep ${PY_INSTALL_DIR}
++	cp _castep.so ${PY_INSTALL_DIR}
