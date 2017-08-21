@@ -4,10 +4,11 @@ FROM python:2
 
 MAINTAINER Tom Daff "tdd20@cam.ac.uk"
 
-####################
-# Root environment #
-####################
+######################
+## Root environment ##
+######################
 
+RUN cp /etc/skel/.bash* /etc/skel/.profile /root/
 RUN echo "PS1='docker:\W$ '" >> /root/.bashrc
 
 ###################
@@ -75,6 +76,9 @@ RUN pip install git+https://github.com/libAtoms/matscipy.git
 ## Julia ##
 ###########
 
+# List of Julia packages to install
+ARG JULIA_PACKAGES="IJulia PyCall JuLIP PyPlot ODE Plots"
+
 # Set JULIA_PKGDIR to install packages globally
 ENV JULIA_PKGDIR /opt/julia/share/site
 
@@ -88,14 +92,14 @@ RUN mkdir -p $JULIA_PATH \
     && cd $JULIA_PATH \
     && curl "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" | tar xz --strip-components 1
 
-RUN ${JULIA_PATH}/bin/julia -e 'Pkg.init()'
-RUN ${JULIA_PATH}/bin/julia -e 'Pkg.add("IJulia")'
-RUN ${JULIA_PATH}/bin/julia -e 'Pkg.add("PyCall")'
-RUN ${JULIA_PATH}/bin/julia -e 'Pkg.add("JuLIP")'
-RUN ${JULIA_PATH}/bin/julia -e 'Pkg.add("PyPlot")'
-
-# pre-compilation of installed packages
-RUN ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end'
+# umask ensures directories are writeable for non-root user
+RUN umask 0000 \
+    && ${JULIA_PATH}/bin/julia -e 'Pkg.init()' \
+    && echo "${JULIA_PACKAGES}" | sed 's/\s\+/\n/g' > $JULIA_PKGDIR/v${JULIA_VERSION%[.-]*}/REQUIRE \
+    && ${JULIA_PATH}/bin/julia -e 'Pkg.resolve()' \
+    # pre-compilation of installed packages
+    && ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end' \
+    && chmod -R a+rw ${JULIA_PKGDIR}/lib
 
 # Current version of Julia
 ENV JULIA_PATH /opt/julia/v0.5
@@ -106,21 +110,17 @@ RUN mkdir -p $JULIA_PATH \
     && cd $JULIA_PATH \
     && curl "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" | tar xz --strip-components 1
 
+# umask ensures directories are writeable for non-root user
+RUN umask 0000 \
+    && ${JULIA_PATH}/bin/julia -e 'Pkg.init()' \
+    && echo "${JULIA_PACKAGES}" | sed 's/\s\+/\n/g' > $JULIA_PKGDIR/v${JULIA_VERSION%[.-]*}/REQUIRE \
+    && ${JULIA_PATH}/bin/julia -e 'Pkg.resolve()' \
+    # pre-compilation of installed packages
+    && ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end' \
+    && chmod -R a+rw ${JULIA_PKGDIR}/lib
+
 # Add to path as current version
 ENV PATH $JULIA_PATH/bin:$PATH
-
-RUN julia -e 'Pkg.init()'
-RUN julia -e 'Pkg.add("IJulia")'
-RUN julia -e 'Pkg.add("PyCall")'
-RUN julia -e 'Pkg.add("JuLIP")'
-RUN julia -e 'Pkg.add("PyPlot")'
-
-# pre-compilation of installed packages
-RUN ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end'
-
-# make Julia package directories world-writable
-RUN find ${JULIA_PKGDIR} -type d -exec chmod a+w {} \;
-RUN chmod -R 644 ${JULIA_PKGDIR}/lib
 
 # Add kernelspecs to global Jupyter
 RUN mv /root/.local/share/jupyter/kernels/julia* /usr/local/share/jupyter/kernels/
@@ -148,21 +148,13 @@ RUN curl "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_1_2_body_LiH2O
 RUN curl "http://www.libatoms.org/pub/Home/DataRepository/aC_GAP.tar.gz" \
     | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Carbon/,"
 
-# The following are not included, because they are just demo examples, not useful potentials 
-#RUN curl "http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_Carbon.tar.bz2" \
-#    | tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/BulkSemiconductorC/,"
-#RUN curl "http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_Silicon.tar.bz2" \
-#    | tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/BulkSemiconductorSi/,"
-#RUN curl "http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_Germanium.tar.bz2" \
-#    | tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/BulkSemiconductorGe/,"
-#RUN curl "http://www.libatoms.org/pub/Home/BulkSemiconductors/gp_bulk_GalliumNitride.tar.bz2" \
-#    | tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/BulkSemiconductorGaN/,"
-
-ADD GAPPotentials.md ${POTENTIALS_DIR}/
+ADD Files/GAPPotentials.md ${POTENTIALS_DIR}/
 
 # GPAW data
 # Ensure we don't run interactively
-RUN gpaw install-data --register /opt/share/gpaw
+ENV GPAW_SETUP_VERSION 0.9.20000
+RUN gpaw install-data --no-register --version=${GPAW_SETUP_VERSION} /opt/share/gpaw
+ENV GPAW_SETUP_PATH /opt/share/gpaw/gpaw-setups-${GPAW_SETUP_VERSION}
 
 ##############
 ## Software ##
