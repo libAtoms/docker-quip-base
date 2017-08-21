@@ -2,7 +2,7 @@
 
 Maintainer: James Kermode <j.r.kermode@warwick.ac.uk>
 
-This requires a licensed copy of Castep (free to UK academics). 
+This requires a licensed copy of Castep (http://www.castep.org; free to UK academics). 
 
 Place the CASTEP-17.21.tar.gz source tarball in the working directory before running:
 
