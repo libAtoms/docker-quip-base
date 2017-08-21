@@ -8,10 +8,8 @@ Place the CASTEP-17.21.tar.gz source tarball in the working directory before run
 
       docker build -t caspytep .
 
-For a demonstration of the capabilities of `CasPyTep`, see the presentation
-from the 2017 Castep Advanced Developers Workshop included in the `notebooks/` 
-subdirectory.
+For a demonstration of the capabilities of `CasPyTep`, see this [presentation](notebooks/demo.ipynb)
+from the 2017 Castep Advanced Developers Workshop.
 
-The included patch file has been submitted to the Castep development repository, so
-will be incorporated in future releases.
-
+The included patch file has been submitted to the Castep development repository and
+will be incorporated in future releases, at which time it will be removed from here.
