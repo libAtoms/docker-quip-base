@@ -136,17 +136,17 @@ RUN mv /root/.local/share/jupyter/kernels/julia* /usr/local/share/jupyter/kernel
 
 ENV POTENTIALS_DIR /opt/share/potentials
 
-RUN curl "http://www.libatoms.org/pub/Home/TungstenGAP/GAP_6.tbz2" \
+RUN wget -O- "http://www.libatoms.org/pub/Home/TungstenGAP/GAP_6.tbz2" \
     | tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/Tungsten/,"
-RUN curl "http://www.libatoms.org/pub/Home/IronGAP/gp33b.tar.gz" \
+RUN wget -O- "http://www.libatoms.org/pub/Home/IronGAP/gp33b.tar.gz" \
     | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Iron/,"
-RUN curl "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_water.tgz" \
+RUN wget -O- "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_water.tgz" \
     | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Water/,"
-RUN curl "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_ch4_h2o.tgz" \
+RUN wget -O- "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_ch4_h2o.tgz" \
     | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/WaterCH4/,"
-RUN curl "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_1_2_body_LiH2O.tgz" \
+RUN wget -O- "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_1_2_body_LiH2O.tgz" \
     | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/WaterLiH2O/,"
-RUN curl "http://www.libatoms.org/pub/Home/DataRepository/aC_GAP.tar.gz" \
+RUN wget -O- "http://www.libatoms.org/pub/Home/DataRepository/aC_GAP.tar.gz" \
     | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Carbon/,"
 
 ADD Files/GAPPotentials.md ${POTENTIALS_DIR}/
