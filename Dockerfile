@@ -32,6 +32,7 @@ RUN apt-get -y update \
         vim \
         emacs-nox \
         less \
+        bsdmainutils \
         # AtomEye
         libxpm-dev \
         libgsl0-dev \
