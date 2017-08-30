@@ -29,10 +29,12 @@ RUN apt-get -y update \
         netcdf-bin \
         curl \
         libzmq3 \
+        # Useful tools
         vim \
         emacs-nox \
         less \
         bsdmainutils \
+        man-db \
         # AtomEye
         libxpm-dev \
         libgsl0-dev \
