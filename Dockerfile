@@ -72,6 +72,8 @@ RUN pip install --no-cache-dir gpaw
 
 RUN pip install git+https://github.com/libAtoms/matscipy.git
 
+RUN pip install atomistica
+
 ###########
 ## Julia ##
 ###########
