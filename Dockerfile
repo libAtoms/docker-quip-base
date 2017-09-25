@@ -43,7 +43,10 @@ RUN apt-get -y update \
         csh \
         flex \
         # gpaw
-        libxc-dev
+        libxc-dev \
+        # target for the future
+        python3 \
+        python3-dev
 
 # Custom compilation of OpenBLAS with OpenMP enabled 
 # (linear algebra is limited to single core in debs)
@@ -73,9 +76,30 @@ RUN pip install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg \
 # Requires numpy to install
 RUN pip install --no-cache-dir gpaw
 
-RUN pip install git+https://github.com/libAtoms/matscipy.git
+RUN git clone --depth=1 https://github.com/libAtoms/matscipy.git /opt/matscipy \
+    && cd /opt/matscipy \
+    && pip install --no-cache-dir .
 
 RUN pip install --global-option=build_ext --global-option="-L/opt/OpenBLAS/lib" atomistica
+
+
+# Repeat for Python 3
+RUN virtualenv -p python3 /opt/python3
+RUN echo "alias py3='source /opt/python3/bin/activate'" > /etc/profile.d/00-py3.sh
+
+ENV PYTHON3 /opt/python3/bin/python
+ENV PIP3 /opt/python3/bin/pip
+
+RUN $PIP3 install --upgrade pip
+RUN $PIP3 install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg \
+                                 imolecule sphinx spglib
+# Requires numpy to install
+RUN $PIP3 install --no-cache-dir gpaw
+
+RUN $PIP3 install git+https://github.com/libAtoms/matscipy.git
+
+RUN $PIP3 install --global-option=build_ext --global-option="-L/opt/OpenBLAS/lib" atomistica
+
 
 ###########
 ## Julia ##
