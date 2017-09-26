@@ -30,5 +30,7 @@ that need long compilation times.
 
 Included software:
 
+ - Python 3 including the same scientific stack as Python 2 as a virtualenv
+   in ``/opt/python3``
  - Amber (may need to ``source /opt/amber16/amber.sh``), includes mpi version
 

@@ -15,7 +15,7 @@ MAINTAINER Tom Daff "tdd20@cam.ac.uk"
 # include `py3` command as a quick alias
 # to activate
 RUN virtualenv -p python3 /opt/python3
-RUN echo "alias py3='source /opt/python3/bin/activate'" > /etc/profile.d/00-py3.sh
+RUN echo "alias py3='source /opt/python3/bin/activate'" >> /etc/bash.bashrc
 
 ENV PYTHON3 /opt/python3/bin/python
 ENV PIP3 /opt/python3/bin/pip
@@ -30,6 +30,10 @@ RUN $PIP3 install git+https://github.com/libAtoms/matscipy.git
 
 RUN $PIP3 install --global-option=build_ext --global-option="-L/opt/OpenBLAS/lib" atomistica
 
+# Add kernel to main Jupyter
+# POSIX echo does not take -e already works with newlines
+RUN ln -s /opt/python3/share/jupyter/kernels/python3 /usr/local/share/jupyter/kernels/ \
+    && echo '{\n "argv": [\n  "/opt/python3/bin/python",\n  "-m",\n  "ipykernel_launcher",\n  "-f",\n  "{connection_file}"\n ],\n "display_name": "Python 3",\n "language": "python"\n}' > /usr/local/share/jupyter/kernels/python3/kernel.json
 
 # AmberTools (no Amber)
 
