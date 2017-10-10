@@ -72,15 +72,18 @@ RUN ldconfig
 # Put any Python libraries here
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg \
-                               imolecule sphinx spglib
+                               imolecule sphinx spglib nglview
 # Requires numpy to install
 RUN pip install --no-cache-dir gpaw
 
+# Keep the source for examples
 RUN git clone --depth=1 https://github.com/libAtoms/matscipy.git /opt/matscipy \
     && cd /opt/matscipy \
     && pip install --no-cache-dir .
 
 RUN pip install --global-option=build_ext --global-option="-L/opt/OpenBLAS/lib" atomistica
+
+RUN jupyter-nbextension enable nglview --py --sys-prefix
 
 
 ###########

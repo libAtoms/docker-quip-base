@@ -22,13 +22,15 @@ ENV PIP3 /opt/python3/bin/pip
 
 RUN $PIP3 install --upgrade pip
 RUN $PIP3 install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg \
-                                 imolecule sphinx spglib
+                                 imolecule sphinx spglib nglview
 # Requires numpy to install
 RUN $PIP3 install --no-cache-dir gpaw
 
 RUN $PIP3 install git+https://github.com/libAtoms/matscipy.git
 
 RUN $PIP3 install --global-option=build_ext --global-option="-L/opt/OpenBLAS/lib" atomistica
+
+RUN $PYTHON3 -m jupyter nbextension enable nglview --py --sys-prefix
 
 # Add kernel to main Jupyter
 # POSIX echo does not take -e already works with newlines
