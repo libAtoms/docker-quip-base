@@ -83,7 +83,9 @@ RUN git clone --depth=1 https://github.com/libAtoms/matscipy.git /opt/matscipy \
 
 RUN pip install --global-option=build_ext --global-option="-L/opt/OpenBLAS/lib" atomistica
 
-RUN jupyter-nbextension enable nglview --py --sys-prefix
+RUN jupyter nbextension enable --py --sys-prefix widgetsnbextension
+RUN jupyter nbextension enable --py --sys-prefix nglview
+
 
 
 ###########
