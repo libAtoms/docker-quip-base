@@ -14,28 +14,31 @@ MAINTAINER Tom Daff "tdd20@cam.ac.uk"
 # Put Python 3 packages in a virtualenv
 # include `py3` command as a quick alias
 # to activate
-RUN virtualenv -p python3 /opt/python3
-RUN echo "alias py3='source /opt/python3/bin/activate'" >> /etc/bash.bashrc
+ENV PY3_PATH /opt/python3/
 
-ENV PYTHON3 /opt/python3/bin/python
-ENV PIP3 /opt/python3/bin/pip
+RUN virtualenv -p python3 ${PY3_PATH}
+RUN echo "alias py3='source ${PY3_PATH}/bin/activate'" >> /etc/bash.bashrc
 
-RUN $PIP3 install --upgrade pip
-RUN $PIP3 install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg \
+ENV PYTHON3 ${PY3_PATH}/bin/python
+ENV PIP3 ${PY3_PATH}/bin/pip
+
+RUN ${PIP3} install --upgrade pip
+RUN ${PIP3} install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg \
                                  imolecule sphinx spglib nglview
 # Requires numpy to install
-RUN $PIP3 install --no-cache-dir gpaw
+RUN ${PIP3} install --no-cache-dir gpaw
 
-RUN $PIP3 install git+https://github.com/libAtoms/matscipy.git
+RUN ${PIP3} install git+https://github.com/libAtoms/matscipy.git
 
-RUN $PIP3 install --global-option=build_ext --global-option="-L/opt/OpenBLAS/lib" atomistica
+RUN ${PIP3} install --global-option=build_ext --global-option="-L/opt/OpenBLAS/lib" atomistica
 
-RUN $PYTHON3 -m jupyter nbextension enable nglview --py --sys-prefix
+RUN ${PY3_PATH}/bin/jupyter nbextension enable --py --sys-prefix widgetsnbextension
+RUN ${PY3_PATH}/bin/jupyter nbextension enable --py --sys-prefix nglview
 
 # Add kernel to main Jupyter
 # POSIX echo does not take -e already works with newlines
-RUN ln -s /opt/python3/share/jupyter/kernels/python3 /usr/local/share/jupyter/kernels/ \
-    && echo '{\n "argv": [\n  "/opt/python3/bin/python",\n  "-m",\n  "ipykernel_launcher",\n  "-f",\n  "{connection_file}"\n ],\n "display_name": "Python 3",\n "language": "python"\n}' > /usr/local/share/jupyter/kernels/python3/kernel.json
+RUN ln -s ${PY3_PATH}/share/jupyter/kernels/python3 /usr/local/share/jupyter/kernels/ \
+    && echo '{\n "argv": [\n  "'${PYTHON3}'",\n  "-m",\n  "ipykernel_launcher",\n  "-f",\n  "{connection_file}"\n ],\n "display_name": "Python 3",\n "language": "python"\n}' > /usr/local/share/jupyter/kernels/python3/kernel.json
 
 # AmberTools (no Amber)
 
