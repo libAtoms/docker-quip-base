@@ -72,7 +72,7 @@ RUN ldconfig
 # Put any Python libraries here
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg \
-                               imolecule sphinx spglib nglview
+                               imolecule sphinx spglib nglview RISE
 # Requires numpy to install
 RUN pip install --no-cache-dir gpaw
 
@@ -84,7 +84,8 @@ RUN git clone --depth=1 https://github.com/libAtoms/matscipy.git /opt/matscipy \
 RUN pip install --global-option=build_ext --global-option="-L/opt/OpenBLAS/lib" atomistica
 
 RUN jupyter-nbextension enable nglview --py --sys-prefix
-
+RUN jupyter-nbextension install rise --py --sys-prefix
+RUN jupyter-nbextension enable rise --py --sys-prefix
 
 ###########
 ## Julia ##
