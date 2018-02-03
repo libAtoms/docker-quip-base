@@ -93,7 +93,7 @@ RUN jupyter-nbextension enable rise --py --sys-prefix
 ###########
 
 # List of Julia packages to install
-ARG JULIA_PACKAGES="IJulia PyCall JuLIP PyPlot ODE Plots"
+ARG JULIA_PACKAGES="IJulia PyCall JuLIP PyPlot ODE Plots Interact"
 
 # Set JULIA_PKGDIR to install packages globally
 ENV JULIA_PKGDIR /opt/julia/share/site
