@@ -77,7 +77,7 @@ RUN pip install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg \
 RUN pip install --no-cache-dir gpaw
 
 # Keep the source for examples
-RUN git clone --depth=1 https://github.com/libAtoms/matscipy.git /opt/matscipy \
+RUN git clone https://github.com/libAtoms/matscipy.git /opt/matscipy \
     && cd /opt/matscipy \
     && pip install --no-cache-dir .
 
