@@ -2,7 +2,7 @@
 # Debian derived
 FROM python:2
 
-MAINTAINER Tom Daff "tdd20@cam.ac.uk"
+MAINTAINER Gabor Csanyi "gc121@cam.ac.uk"
 
 ######################
 ## Root environment ##
