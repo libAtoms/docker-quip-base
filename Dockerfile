@@ -15,6 +15,9 @@ RUN echo "PS1='docker:\W$ '" >> /root/.bashrc
 ## OS level deps ##
 ###################
 
+# github only accepts TLS v1.2 apparently
+git config --global --add http.sslVersion tlsv1.2
+
 # Build tools and deps for QUIP
 # Followed by some useful utilities
 RUN apt-get -y update \
