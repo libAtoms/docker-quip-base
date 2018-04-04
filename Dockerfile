@@ -72,7 +72,7 @@ RUN ldconfig
 # Put any Python libraries here
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg \
-                               imolecule sphinx spglib nglview RISE
+                               imolecule sphinx spglib nglview RISE pandas
 # Requires numpy to install
 RUN pip install --no-cache-dir gpaw
 
