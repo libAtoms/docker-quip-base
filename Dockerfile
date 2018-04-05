@@ -73,8 +73,10 @@ RUN ldconfig
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg \
                                imolecule sphinx spglib nglview RISE pandas
-# Requires numpy to install
-RUN pip install --no-cache-dir gpaw
+
+# Development version of GPAW - requires numpy to install
+RUN cd /opt && curl https://wiki.fysik.dtu.dk/gpaw/gpaw-1.3.1b1.tar.gz | tar xz && \
+    cd gpaw-1.3.1b1 && pip install --no-cache-dir .
 
 # Keep the source for examples
 RUN git clone https://github.com/libAtoms/matscipy.git /opt/matscipy \
