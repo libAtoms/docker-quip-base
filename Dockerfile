@@ -74,7 +74,7 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg \
                                imolecule sphinx spglib nglview RISE pandas
 
-# Development version of GPAW - requires numpy to install
+# Development version of GPAW - requires latest ASE and numpy to install
 RUN cd /opt && curl https://wiki.fysik.dtu.dk/gpaw/gpaw-1.3.1b1.tar.gz | tar xz && \
     cd gpaw-1.3.1b1 && pip install --no-cache-dir .
 
