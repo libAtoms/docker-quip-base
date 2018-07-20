@@ -71,7 +71,7 @@ RUN ldconfig
 
 # Put any Python libraries here
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg \
+RUN pip install --no-cache-dir jupyter jupyterlab numpy scipy matplotlib ase pyamg \
                                imolecule sphinx spglib nglview RISE pandas
 
 # Development version of GPAW - requires latest ASE and numpy to install
@@ -102,7 +102,7 @@ ENV JULIA_PKGDIR /opt/julia/share/site
 
 
 ENV JULIA_PATH /opt/julia/v0.6
-ENV JULIA_VERSION 0.6.2
+ENV JULIA_VERSION 0.6.4
 
 # Don't store the intermediate file, pipe into tar
 RUN mkdir -p $JULIA_PATH \
