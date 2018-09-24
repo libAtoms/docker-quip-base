@@ -28,7 +28,8 @@ RUN apt-get -y update \
         libnetcdf-dev \
         netcdf-bin \
         curl \
-        libzmq3 \
+	# using libzmq3-dev instead of libzmq3, this one works
+        libzmq3-dev \
         # Useful tools
         vim \
         emacs-nox \
