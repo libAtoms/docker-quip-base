@@ -165,7 +165,7 @@ RUN wget -nv -O- "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_1_2_bo
 RUN wget -nv -O- "http://www.libatoms.org/pub/Home/DataRepository/aC_GAP.tar.gz" \
     | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Carbon/,"
 
-ADD Files/GAPPotentials.md ${POTENTIALS_DIR}/
+#ADD Files/GAPPotentials.md ${POTENTIALS_DIR}/
 
 # GPAW data
 # Ensure we don't run interactively
