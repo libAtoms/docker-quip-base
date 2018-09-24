@@ -75,9 +75,9 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg \
                                imolecule sphinx spglib nglview RISE pandas
 
-# Development version of GPAW - requires latest ASE and numpy to install
-RUN cd /opt && curl https://wiki.fysik.dtu.dk/gpaw/gpaw-1.3.1b1.tar.gz | tar xz && \
-    cd gpaw-1.3.1b1 && pip install --no-cache-dir .
+# Slightly older, non dev version of GPAW
+RUN cd /opt && wget https://files.pythonhosted.org/packages/source/g/gpaw/gpaw-1.4.0.tar.gz -O - | tar xz && \
+    cd gpaw-1.4.0 && pip install --no-cache-dir .
 
 # Keep the source for examples
 RUN git clone https://github.com/libAtoms/matscipy.git /opt/matscipy \
@@ -170,7 +170,8 @@ ADD Files/GAPPotentials.md ${POTENTIALS_DIR}/
 # GPAW data
 # Ensure we don't run interactively
 ENV GPAW_SETUP_VERSION 0.9.20000
-RUN gpaw install-data --no-register --version=${GPAW_SETUP_VERSION} /opt/share/gpaw
+RUN mkdir -p /opt/share/gpaw
+RUN wget https://wiki.fysik.dtu.dk/gpaw-files/gpaw-setups-0.9.20000.tar.gz -O - | tar -xz  -C /opt/share/gpaw/
 ENV GPAW_SETUP_PATH /opt/share/gpaw/gpaw-setups-${GPAW_SETUP_VERSION}
 
 ##############
