@@ -48,7 +48,7 @@ RUN apt-get -y update \
         python3 \
         python3-dev
 
-# Custom compilation of OpenBLAS with OpenMP enabled 
+# Custom compilation of OpenBLAS with OpenMP enabled
 # (linear algebra is limited to single core in debs)
 # NUM_THREADS must be set otherwise docker hub build
 # non-parallel version.
@@ -95,7 +95,7 @@ RUN jupyter-nbextension enable rise --py --sys-prefix
 ###########
 
 # List of Julia packages to install
-ARG JULIA_PACKAGES="IJulia PyCall JuLIP PyPlot ODE Plots Interact"
+ARG JULIA_PACKAGES="PyCall IJulia JuLIP ASE PyPlot ODE Plots Interact"
 
 # Set JULIA_PKGDIR to install packages globally
 ENV JULIA_PKGDIR /opt/julia/share/site
@@ -177,4 +177,3 @@ ENV GPAW_SETUP_PATH /opt/share/gpaw/gpaw-setups-${GPAW_SETUP_VERSION}
 ##############
 
 # Add big software packages into the Software subdirectory
-
