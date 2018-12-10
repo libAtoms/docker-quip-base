@@ -95,13 +95,14 @@ RUN jupyter-nbextension enable rise --py --sys-prefix
 ## Julia ##
 ###########
 
+# Use Python 2.7 with Julia
+ENV PYTHON /usr/local/bin/python
+
 # List of Julia packages to install
 ARG JULIA_PACKAGES="PyCall IJulia JuLIP ASE PyPlot ODE Plots Interact"
 
 # Set JULIA_PKGDIR to install packages globally
 ENV JULIA_PKGDIR /opt/julia/share/site
-
-
 ENV JULIA_PATH /opt/julia/v0.6
 ENV JULIA_VERSION 0.6.2
 
