@@ -72,8 +72,11 @@ RUN ldconfig
 
 # Put any Python libraries here
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg \
+RUN pip install --no-cache-dir jupyter numpy scipy matplotlib pyamg \
                                imolecule sphinx spglib nglview RISE pandas
+
+# Devel version of ASE
+RUN pip install --no-cache-dir git+https://gitlab.com/ase/ase.git
 
 # Slightly older, non dev version of GPAW
 RUN cd /opt && wget https://files.pythonhosted.org/packages/source/g/gpaw/gpaw-1.4.0.tar.gz -O - | tar xz && \
@@ -99,12 +102,12 @@ RUN jupyter-nbextension enable rise --py --sys-prefix
 ENV PYTHON /usr/local/bin/python
 
 # List of Julia packages to install
-ARG JULIA_PACKAGES="PyCall IJulia JuLIP ASE PyPlot ODE Plots Interact"
+ARG JULIA_PACKAGES="PyCall IJulia PyPlot ODE Plots Interact"
 
 # Set JULIA_PKGDIR to install packages globally
 ENV JULIA_PKGDIR /opt/julia/share/site
 ENV JULIA_PATH /opt/julia/v0.6
-ENV JULIA_VERSION 0.6.2
+ENV JULIA_VERSION 0.6.4
 
 # Don't store the intermediate file, pipe into tar
 RUN mkdir -p $JULIA_PATH \
@@ -120,22 +123,13 @@ RUN umask 0000 \
     && ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end' \
     && chmod -R a+rw ${JULIA_PKGDIR}/lib
 
-#ENV JULIA_PATH /opt/julia/v0.5
-#ENV JULIA_VERSION 0.5.2
-
-# Don't store the intermediate file, pipe into tar
-#RUN mkdir -p $JULIA_PATH \
-#    && cd $JULIA_PATH \
-#    && curl "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" | tar xz --strip-components 1
-
-# umask ensures directories are writeable for non-root user
-#RUN umask 0000 \
-#    && ${JULIA_PATH}/bin/julia -e 'Pkg.init()' \
-#    && echo "${JULIA_PACKAGES}" | sed 's/\s\+/\n/g' > $JULIA_PKGDIR/v${JULIA_VERSION%[.-]*}/REQUIRE \
-#    && ${JULIA_PATH}/bin/julia -e 'Pkg.resolve()' \
-#    # pre-compilation of installed packages
-#    && ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end' \
-#    && chmod -R a+rw ${JULIA_PKGDIR}/lib
+# Devel versions of ASE.jl and JuLIP.jl
+RUN julia -e 'Pkg.clone("https://github.com/libAtoms/JuLIP.jl")'
+RUN julia -e 'Pkg.build("JuLIP")'
+RUN julia -e 'using JuLIP'
+RUN julia -e 'Pkg.clone("https://github.com/libAtoms/ASE.jl")'
+RUN julia -e 'Pkg.build("ASE")'
+RUN julia -e 'using ASE'
 
 # Add to path as current version
 ENV PATH $JULIA_PATH/bin:$PATH
