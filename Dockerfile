@@ -121,12 +121,12 @@ RUN umask 0000 \
     && chmod -R a+rw ${JULIA_PKGDIR}/lib
 
 # Devel versions of ASE.jl and JuLIP.jl
-RUN julia -e 'Pkg.clone("https://github.com/libAtoms/JuLIP.jl")'
-RUN julia -e 'Pkg.build("JuLIP")'
-RUN julia -e 'using JuLIP'
-RUN julia -e 'Pkg.clone("https://github.com/libAtoms/ASE.jl")'
-RUN julia -e 'Pkg.build("ASE")'
-RUN julia -e 'using ASE'
+RUN ${JULIA_PATH}/bin/julia -e 'Pkg.clone("https://github.com/libAtoms/JuLIP.jl")'
+RUN ${JULIA_PATH}/bin/julia -e 'Pkg.build("JuLIP")'
+RUN ${JULIA_PATH}/bin/julia -e 'using JuLIP'
+RUN ${JULIA_PATH}/bin/julia -e 'Pkg.clone("https://github.com/libAtoms/ASE.jl")'
+RUN ${JULIA_PATH}/bin/julia -e 'Pkg.build("ASE")'
+RUN ${JULIA_PATH}/bin/julia -e 'using ASE'
 
 # Add to path as current version
 ENV PATH $JULIA_PATH/bin:$PATH
