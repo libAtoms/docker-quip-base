@@ -73,10 +73,7 @@ RUN ldconfig
 # Put any Python libraries here
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir jupyter numpy scipy matplotlib pyamg \
-                               imolecule sphinx spglib nglview RISE pandas
-
-# Devel version of ASE
-RUN pip install --no-cache-dir git+https://gitlab.com/ase/ase.git
+                               imolecule sphinx spglib nglview RISE pandas ase
 
 # Slightly older, non dev version of GPAW
 RUN cd /opt && wget https://files.pythonhosted.org/packages/source/g/gpaw/gpaw-1.4.0.tar.gz -O - | tar xz && \
