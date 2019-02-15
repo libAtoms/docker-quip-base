@@ -120,6 +120,10 @@ RUN umask 0000 \
     && ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end' \
     && chmod -R a+rw ${JULIA_PKGDIR}/lib
 
+# Use Python 2.7 with Julia
+ENV PYTHON /usr/local/bin/python
+RUN ${JULIA_PATH}/bin/julia -e 'Pkg.build("PyCall")'
+
 # Devel versions of ASE.jl and JuLIP.jl
 RUN ${JULIA_PATH}/bin/julia -e 'Pkg.clone("https://github.com/libAtoms/JuLIP.jl")'
 RUN ${JULIA_PATH}/bin/julia -e 'Pkg.build("JuLIP")'
