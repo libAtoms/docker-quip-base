@@ -91,15 +91,15 @@ RUN jupyter nbextension enable --py --sys-prefix nglview
 RUN jupyter-nbextension install rise --py --sys-prefix
 RUN jupyter-nbextension enable rise --py --sys-prefix
 
-###########
-## Julia ##
-###########
+##################
+## Julia v0.6.4 ##
+##################
 
 # Use Python 2.7 with Julia
 ENV PYTHON /usr/local/bin/python
 
 # List of Julia packages to install
-ARG JULIA_PACKAGES="PyCall IJulia PyPlot ODE Plots Interact"
+ARG JULIA_PACKAGES="PyCall IJulia PyPlot ODE Plots Interact JuLIP ASE"
 
 # Set JULIA_PKGDIR to install packages globally
 ENV JULIA_PKGDIR /opt/julia/share/site
@@ -124,20 +124,42 @@ RUN umask 0000 \
 ENV PYTHON /usr/local/bin/python
 RUN ${JULIA_PATH}/bin/julia -e 'Pkg.build("PyCall")'
 
-# Devel versions of ASE.jl and JuLIP.jl
-RUN ${JULIA_PATH}/bin/julia -e 'Pkg.clone("https://github.com/libAtoms/JuLIP.jl")'
-RUN ${JULIA_PATH}/bin/julia -e 'Pkg.build("JuLIP")'
-RUN ${JULIA_PATH}/bin/julia -e 'using JuLIP'
-RUN ${JULIA_PATH}/bin/julia -e 'Pkg.clone("https://github.com/libAtoms/ASE.jl")'
-RUN ${JULIA_PATH}/bin/julia -e 'Pkg.build("ASE")'
-RUN ${JULIA_PATH}/bin/julia -e 'using ASE'
+# create a symlink to be able to call Julia v0.6.4
+RUN ln -s /opt/julia/v0.6/bin/julia /usr/local/bin/julia6
+
+# # Add to path as current version
+# ENV PATH $JULIA_PATH/bin:$PATH
+
+###################
+## Julia v1.1.x  ##
+###################
+
+# specify paths for Julia 1.1
+ENV JULIA1_PATH /opt/julia/v1.1.0
+# PKG_DIR is now replaced with DEPOT_PATH 
+ENV JULIA_DEPOT_PATH /opt/julia/share/site
+
+RUN mkdir -p ${JULIA1_PATH} \
+    && cd ${JULIA1_PATH} \
+    && curl "https://julialang-s3.julialang.org/bin/linux/x64/1.1/julia-1.1.0-linux-x86_64.tar.gz" | tar xz --strip-components 1
+
+# clone the JuLipAtoms environment and copy it into v1.1 to make it the 
+# default environment loaded at startup
+RUN mkdir -p ${JULIA_DEPOT_PATH}/environments \
+    && cd ${JULIA_DEPOT_PATH}/environments \ 
+    && git clone https://github.com/libAtoms/JuLibAtoms.git \ 
+    && mkdir v1.1   \ 
+    && cp ./JuLibAtoms/*.toml ./v1.1   
+
+# this should download and build all packages 
+RUN ${JULIA1_PATH}/bin/julia -e 'using Pkg; Pkg.instantiate()'
 
 # Add to path as current version
-ENV PATH $JULIA_PATH/bin:$PATH
+ENV PATH $JULIA1_PATH/bin:$PATH
 
+# Relevant for Both Julia Environments:
 # Add kernelspecs to global Jupyter
 RUN mv /root/.local/share/jupyter/kernels/julia* /usr/local/share/jupyter/kernels/
-
 
 ##########
 ## DATA ##
@@ -175,3 +197,8 @@ ENV GPAW_SETUP_PATH /opt/share/gpaw/gpaw-setups-${GPAW_SETUP_VERSION}
 ##############
 
 # Add big software packages into the Software subdirectory
+
+
+# Use these to run jupyter from this base notebook for testing
+# CMD jupyter notebook --ip=$(hostname -i) --port=8899 --allow-root
+# EXPOSE 8899
