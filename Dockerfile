@@ -47,7 +47,11 @@ RUN apt-get -y update \
         libxc-dev \
         # target for the future
         python3 \
-        python3-dev
+        python3-dev \
+	python3-setuptools\
+	python3-numpy\
+	python3-scipy\
+	python3-matplotlib
 
 # Custom compilation of OpenBLAS with OpenMP enabled
 # (linear algebra is limited to single core in debs)
