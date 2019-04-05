@@ -23,12 +23,14 @@ RUN apt-get -y update \
         gfortran \
         openmpi-bin \
         libopenmpi-dev \
-        liblapack-dev \
-        libblas-dev \
+        liblapack3 \
+        libblas3 \
+        # liblapack-dev \
+        # libblas-dev \
         libnetcdf-dev \
         netcdf-bin \
         curl \
-	# using libzmq3-dev instead of libzmq3, this one works
+	    # using libzmq3-dev instead of libzmq3, this one works
         libzmq3-dev \
         # Useful tools
         vim \
@@ -47,53 +49,54 @@ RUN apt-get -y update \
         libxc-dev \
         # target for the future
         python3 \
-        python3-dev \
-	python3-setuptools\
-	python3-numpy\
-	python3-scipy\
-	python3-matplotlib
+        # python3-dev \
+    	python3-setuptools \
+    	python3-numpy \
+    	python3-scipy \
+    	python3-matplotlib
 
 # Custom compilation of OpenBLAS with OpenMP enabled
 # (linear algebra is limited to single core in debs)
 # NUM_THREADS must be set otherwise docker hub build
 # non-parallel version.
 RUN git clone https://github.com/xianyi/OpenBLAS.git /tmp/OpenBLAS \
-    && cd /tmp/OpenBLAS/ \
-    && make DYNAMIC_ARCH=1 NO_AFFINITY=1 USE_OPENMP=1 NUM_THREADS=32 \
-    && make DYNAMIC_ARCH=1 NO_AFFINITY=1 USE_OPENMP=1 NUM_THREADS=32 install \
-    && rm -rf /tmp/OpenBLAS
-
-# Make OpenBLAS the default
-RUN update-alternatives --install /usr/lib/libblas.so libblas.so /opt/OpenBLAS/lib/libopenblas.so 1000
-RUN update-alternatives --install /usr/lib/libblas.so.3 libblas.so.3 /opt/OpenBLAS/lib/libopenblas.so 1000
-RUN update-alternatives --install /usr/lib/liblapack.so liblapack.so /opt/OpenBLAS/lib/libopenblas.so 1000
-RUN update-alternatives --install /usr/lib/liblapack.so.3 liblapack.so.3 /opt/OpenBLAS/lib/libopenblas.so 1000
-RUN ldconfig
+ && cd /tmp/OpenBLAS/ \
+ && make NO_AFFINITY=1 USE_OPENMP=1 NUM_THREADS=32 \
+ && make NO_AFFINITY=1 USE_OPENMP=1 NUM_THREADS=32 install \
+ && rm -rf /tmp/OpenBLAS \
+ # Make OpenBLAS the default
+ && update-alternatives --install /usr/lib/libblas.so libblas.so /opt/OpenBLAS/lib/libopenblas.so 1000 \
+ && update-alternatives --install /usr/lib/libblas.so.3 libblas.so.3 /opt/OpenBLAS/lib/libopenblas.so 1000 \
+ && update-alternatives --install /usr/lib/liblapack.so liblapack.so /opt/OpenBLAS/lib/libopenblas.so 1000 \
+ && update-alternatives --install /usr/lib/liblapack.so.3 liblapack.so.3 /opt/OpenBLAS/lib/libopenblas.so 1000 \
+ && ldconfig
 
 ############
 ## Python ##
 ############
 
 # Put any Python libraries here
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir jupyter numpy scipy matplotlib pyamg \
-                               imolecule sphinx spglib nglview RISE pandas ase
+RUN pip install --upgrade pip \
+ && pip install --no-cache-dir \
+    jupyter numpy scipy matplotlib pyamg \
+    imolecule sphinx spglib nglview RISE pandas ase \
+ && jupyter nbextension enable --py --sys-prefix widgetsnbextension \
+ && jupyter nbextension enable --py --sys-prefix nglview \
+ && jupyter-nbextension install rise --py --sys-prefix \
+ && jupyter-nbextension enable rise --py --sys-prefix
 
 # Slightly older, non dev version of GPAW
-RUN cd /opt && wget https://files.pythonhosted.org/packages/source/g/gpaw/gpaw-1.4.0.tar.gz -O - | tar xz && \
-    cd gpaw-1.4.0 && pip install --no-cache-dir .
+RUN cd /opt \
+ && wget https://files.pythonhosted.org/packages/source/g/gpaw/gpaw-1.4.0.tar.gz -O - | tar xz \
+ && cd gpaw-1.4.0 \
+ && pip install --no-cache-dir .
 
 # Keep the source for examples
 RUN git clone https://github.com/libAtoms/matscipy.git /opt/matscipy \
-    && cd /opt/matscipy \
-    && pip install --no-cache-dir .
+ && cd /opt/matscipy \
+ && pip install --no-cache-dir .
 
 RUN pip install --global-option=build_ext --global-option="-L/opt/OpenBLAS/lib" atomistica
-
-RUN jupyter nbextension enable --py --sys-prefix widgetsnbextension
-RUN jupyter nbextension enable --py --sys-prefix nglview
-RUN jupyter-nbextension install rise --py --sys-prefix
-RUN jupyter-nbextension enable rise --py --sys-prefix
 
 ##################
 ## Julia v0.6.4 ##
@@ -112,20 +115,20 @@ ENV JULIA_VERSION 0.6.4
 
 # Don't store the intermediate file, pipe into tar
 RUN mkdir -p $JULIA_PATH \
-    && cd $JULIA_PATH \
-    && curl "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" > tmp.tgz \
+ && cd $JULIA_PATH \
+ && curl "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" > tmp.tgz \
  && file tmp.tgz \
  && ls -l tmp.tgz \
  && tar xzf tmp.tgz --strip-components 1
 
 # umask ensures directories are writeable for non-root user
 RUN umask 0000 \
-    && ${JULIA_PATH}/bin/julia -e 'Pkg.init()' \
-    && echo "${JULIA_PACKAGES}" | sed 's/\s\+/\n/g' > $JULIA_PKGDIR/v${JULIA_VERSION%[.-]*}/REQUIRE \
-    && ${JULIA_PATH}/bin/julia -e 'Pkg.resolve()' \
-    # pre-compilation of installed packages
-    && ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end' \
-    && chmod -R a+rw ${JULIA_PKGDIR}/lib
+ && ${JULIA_PATH}/bin/julia -e 'Pkg.init()' \
+ && echo "${JULIA_PACKAGES}" | sed 's/\s\+/\n/g' > $JULIA_PKGDIR/v${JULIA_VERSION%[.-]*}/REQUIRE \
+ && ${JULIA_PATH}/bin/julia -e 'Pkg.resolve()' \
+ # pre-compilation of installed packages
+ && ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end' \
+ && chmod -R a+rw ${JULIA_PKGDIR}/lib
 
 # Use Python 2.7 with Julia
 ENV PYTHON /usr/local/bin/python
@@ -147,16 +150,16 @@ ENV JULIA1_PATH /opt/julia/v1.1.0
 ENV JULIA_DEPOT_PATH /opt/julia/share/site
 
 RUN mkdir -p ${JULIA1_PATH} \
-    && cd ${JULIA1_PATH} \
-    && curl "https://julialang-s3.julialang.org/bin/linux/x64/1.1/julia-1.1.0-linux-x86_64.tar.gz" | tar xz --strip-components 1
+ && cd ${JULIA1_PATH} \
+ && curl "https://julialang-s3.julialang.org/bin/linux/x64/1.1/julia-1.1.0-linux-x86_64.tar.gz" | tar xz --strip-components 1
 
 # clone the JuLipAtoms environment and copy it into v1.1 to make it the 
 # default environment loaded at startup
 RUN mkdir -p ${JULIA_DEPOT_PATH}/environments \
-    && cd ${JULIA_DEPOT_PATH}/environments \ 
-    && git clone https://github.com/libAtoms/JuLibAtoms.git \ 
-    && mkdir v1.1   \ 
-    && cp ./JuLibAtoms/*.toml ./v1.1   
+ && cd ${JULIA_DEPOT_PATH}/environments \
+ && git clone https://github.com/libAtoms/JuLibAtoms.git \
+ && mkdir v1.1 \
+ && cp ./JuLibAtoms/*.toml ./v1.1   
 
 # this should download and build all packages 
 RUN ${JULIA1_PATH}/bin/julia -e 'using Pkg; Pkg.instantiate()'
