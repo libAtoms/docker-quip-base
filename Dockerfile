@@ -113,7 +113,10 @@ ENV JULIA_VERSION 0.6.4
 # Don't store the intermediate file, pipe into tar
 RUN mkdir -p $JULIA_PATH \
     && cd $JULIA_PATH \
-    && curl "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" | tar xz --strip-components 1
+    && curl "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" > tmp.tgz
+RUN file tmp.tgz
+RUN ls -l tmp.tgz
+RUN tar xzf tmp.tgz --strip-components 1
 
 # umask ensures directories are writeable for non-root user
 RUN umask 0000 \
