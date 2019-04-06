@@ -113,7 +113,7 @@ ENV JULIA_VERSION 0.6.4
 # Don't store the intermediate file, pipe into tar
 RUN mkdir -p $JULIA_PATH \
     && cd $JULIA_PATH \
-    && curl "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" > tmp.tgz \
+    && curl --location "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" > tmp.tgz \
  && file tmp.tgz \
  && ls -l tmp.tgz \
  && tar xzf tmp.tgz --strip-components 1
@@ -148,14 +148,14 @@ ENV JULIA_DEPOT_PATH /opt/julia/share/site
 
 RUN mkdir -p ${JULIA1_PATH} \
     && cd ${JULIA1_PATH} \
-    && curl "https://julialang-s3.julialang.org/bin/linux/x64/1.1/julia-1.1.0-linux-x86_64.tar.gz" | tar xz --strip-components 1
+    && curl --location "https://julialang-s3.julialang.org/bin/linux/x64/1.1/julia-1.1.0-linux-x86_64.tar.gz" | tar xz --strip-components 1
 
 # clone the JuLipAtoms environment and copy it into v1.1 to make it the 
 # default environment loaded at startup
 RUN mkdir -p ${JULIA_DEPOT_PATH}/environments \
-    && cd ${JULIA_DEPOT_PATH}/environments \ 
-    && git clone https://github.com/libAtoms/JuLibAtoms.git \ 
-    && mkdir v1.1   \ 
+    && cd ${JULIA_DEPOT_PATH}/environments \
+    && git clone https://github.com/libAtoms/JuLibAtoms.git \
+    && mkdir v1.1  \
     && cp ./JuLibAtoms/*.toml ./v1.1   
 
 # this should download and build all packages 
