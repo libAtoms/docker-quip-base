@@ -113,7 +113,7 @@ ENV JULIA_VERSION 0.6.4
 # Don't store the intermediate file, pipe into tar
 RUN mkdir -p $JULIA_PATH \
  && cd $JULIA_PATH \
- && curl --location "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" | tar xz --strip-components 1 \
+ && curl --location "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" | tar xz --strip-components 1 
 
 # umask ensures directories are writeable for non-root user
 RUN umask 0000 \
@@ -174,18 +174,18 @@ RUN mv /root/.local/share/jupyter/kernels/julia* /usr/local/share/jupyter/kernel
 
 ENV POTENTIALS_DIR /opt/share/potentials
 
-RUN wget -nv -O- "http://www.libatoms.org/pub/Home/TungstenGAP/GAP_6.tbz2" \
-    | tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/Tungsten/,"
-RUN wget -nv -O- "http://www.libatoms.org/pub/Home/IronGAP/gp33b.tar.gz" \
-    | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Iron/,"
-RUN wget -nv -O- "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_water.tgz" \
-    | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Water/,"
-RUN wget -nv -O- "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_ch4_h2o.tgz" \
-    | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/WaterCH4/,"
-RUN wget -nv -O- "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_1_2_body_LiH2O.tgz" \
-    | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/WaterLiH2O/,"
-RUN wget -nv -O- "http://www.libatoms.org/pub/Home/DataRepository/aC_GAP.tar.gz" \
-    | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Carbon/,"
+RUN wget -nv -O- "http://www.libatoms.org/pub/Home/TungstenGAP/GAP_6.tbz2" | \
+    tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/Tungsten/,"
+RUN wget -nv -O- "http://www.libatoms.org/pub/Home/IronGAP/gp33b.tar.gz" | \
+    tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Iron/,"
+RUN wget -nv -O- "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_water.tgz" | \
+    tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Water/,"
+RUN wget -nv -O- "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_ch4_h2o.tgz" | \
+    tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/WaterCH4/,"
+RUN wget -nv -O- "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_1_2_body_LiH2O.tgz" | \
+    tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/WaterLiH2O/,"
+RUN wget -nv -O- "http://www.libatoms.org/pub/Home/DataRepository/aC_GAP.tar.gz" | \
+    tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Carbon/,"
 
 #ADD Files/GAPPotentials.md ${POTENTIALS_DIR}/
 
