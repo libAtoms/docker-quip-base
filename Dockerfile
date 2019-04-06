@@ -18,42 +18,39 @@ RUN echo "PS1='docker:\W$ '" >> /root/.bashrc
 # Build tools and deps for QUIP
 # Followed by some useful utilities
 RUN apt-get -y update \
-    && apt-get upgrade -y \
-    && apt-get install -y \
-        gfortran \
-        openmpi-bin \
-        libopenmpi-dev \
-        liblapack3 \
-        libblas3 \
-        # liblapack-dev \
-        # libblas-dev \
-        libnetcdf-dev \
-        netcdf-bin \
-        curl \
-	    # using libzmq3-dev instead of libzmq3, this one works
-        libzmq3-dev \
-        # Useful tools
-        vim \
-        emacs-nox \
-        less \
-        bsdmainutils \
-        man-db \
-        # AtomEye
-        libxpm-dev \
-        libgsl0-dev \
-        xterm \
-        # amber
-        csh \
-        flex \
-        # gpaw
-        libxc-dev \
-        # target for the future
-        python3 \
-        # python3-dev \
-    	python3-setuptools \
-    	python3-numpy \
-    	python3-scipy \
-    	python3-matplotlib
+ && apt-get upgrade -y \
+ && apt-get install -y \
+    libblas3 \
+    liblapack3 \
+    gfortran \
+    openmpi-bin \
+    libopenmpi-dev \
+    libnetcdf-dev \
+    netcdf-bin \
+    curl \
+    # using libzmq3-dev instead of libzmq3, this one works
+    libzmq3-dev \
+    # Useful tools
+    vim \
+    emacs-nox \
+    less \
+    bsdmainutils \
+    man-db \
+    # AtomEye
+    libxpm-dev \
+    libgsl0-dev \
+    xterm \
+    # amber
+    csh \
+    flex \
+    # gpaw
+    libxc-dev \
+    # target for the future
+    python3 \
+    python3-setuptools \
+    python3-numpy \
+    python3-scipy \
+    python3-matplotlib
 
 # Custom compilation of OpenBLAS with OpenMP enabled
 # (linear algebra is limited to single core in debs)
@@ -116,10 +113,7 @@ ENV JULIA_VERSION 0.6.4
 # Don't store the intermediate file, pipe into tar
 RUN mkdir -p $JULIA_PATH \
  && cd $JULIA_PATH \
- && curl "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" > tmp.tgz \
- && file tmp.tgz \
- && ls -l tmp.tgz \
- && tar xzf tmp.tgz --strip-components 1
+ && curl --location "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" | tar xz --strip-components 1 \
 
 # umask ensures directories are writeable for non-root user
 RUN umask 0000 \
@@ -151,7 +145,7 @@ ENV JULIA_DEPOT_PATH /opt/julia/share/site
 
 RUN mkdir -p ${JULIA1_PATH} \
  && cd ${JULIA1_PATH} \
- && curl "https://julialang-s3.julialang.org/bin/linux/x64/1.1/julia-1.1.0-linux-x86_64.tar.gz" | tar xz --strip-components 1
+ && curl --location "https://julialang-s3.julialang.org/bin/linux/x64/1.1/julia-1.1.0-linux-x86_64.tar.gz" | tar xz --strip-components 1
 
 # clone the JuLipAtoms environment and copy it into v1.1 to make it the 
 # default environment loaded at startup
