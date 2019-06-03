@@ -11,6 +11,7 @@ jobs:
         - docker build -t $DOCKER_USERNAME/quip-base-software .
         - docker push $DOCKER_USERNAME/quip-base-software
 
+
           #notifications:
           #  email:
           #    - quip-developers@eng.cam.ac.uk
