@@ -1,6 +1,11 @@
 quip-base
 =========
 
+
+[![Build Status](https://travis-ci.org/libAtoms/docker-quip-base.svg?branch=master)](https://travis-ci.org/libAtoms/docker-quip-base)
+
+https://travis-ci.org/libAtoms/docker-quip-base.svg?branch=master
+
 A Docker image with a scientific stack that is used for building ``QUIP``.
 The image is hosted (and automatically built) on Docker hub as
 [libatomsquip/quip-base](https://hub.docker.com/r/libatomsquip/quip-base/).
