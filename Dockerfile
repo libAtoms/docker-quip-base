@@ -44,14 +44,14 @@ RUN apt-get -y update \
         csh \
         flex \
         # gpaw
-        libxc-dev \
+        libxc-dev
         # target for the future
-        python3 \
-        python3-dev \
-	python3-setuptools\
-	python3-numpy\
-	python3-scipy\
-	python3-matplotlib
+        #python3 \
+        #python3-dev \
+	#python3-setuptools\
+	#python3-numpy\
+	#python3-scipy\
+	#python3-matplotlib
 
 # Custom compilation of OpenBLAS with OpenMP enabled
 # (linear algebra is limited to single core in debs)
@@ -100,39 +100,39 @@ RUN jupyter-nbextension enable rise --py --sys-prefix
 ##################
 
 # Use Python 2.7 with Julia
-ENV PYTHON /usr/local/bin/python
+#ENV PYTHON /usr/local/bin/python
 
 # List of Julia packages to install
-ARG JULIA_PACKAGES="PyCall IJulia PyPlot ODE Plots Interact JuLIP ASE"
+#ARG JULIA_PACKAGES="PyCall IJulia PyPlot ODE Plots Interact JuLIP ASE"
 
 # Set JULIA_PKGDIR to install packages globally
-ENV JULIA_PKGDIR /opt/julia/share/site
-ENV JULIA_PATH /opt/julia/v0.6
-ENV JULIA_VERSION 0.6.4
+#ENV JULIA_PKGDIR /opt/julia/share/site
+#ENV JULIA_PATH /opt/julia/v0.6
+#ENV JULIA_VERSION 0.6.4
 
 # Don't store the intermediate file, pipe into tar
-RUN mkdir -p $JULIA_PATH \
-    && cd $JULIA_PATH \
-    && curl --location "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" > tmp.tgz \
- && file tmp.tgz \
- && ls -l tmp.tgz \
- && tar xzf tmp.tgz --strip-components 1
+#RUN mkdir -p $JULIA_PATH \
+#    && cd $JULIA_PATH \
+#    && curl --location "https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%[.-]*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz" > tmp.tgz \
+# && file tmp.tgz \
+# && ls -l tmp.tgz \
+# && tar xzf tmp.tgz --strip-components 1
 
 # umask ensures directories are writeable for non-root user
-RUN umask 0000 \
-    && ${JULIA_PATH}/bin/julia -e 'Pkg.init()' \
-    && echo "${JULIA_PACKAGES}" | sed 's/\s\+/\n/g' > $JULIA_PKGDIR/v${JULIA_VERSION%[.-]*}/REQUIRE \
-    && ${JULIA_PATH}/bin/julia -e 'Pkg.resolve()' \
-    # pre-compilation of installed packages
-    && ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end' \
-    && chmod -R a+rw ${JULIA_PKGDIR}/lib
+#RUN umask 0000 \
+#    && ${JULIA_PATH}/bin/julia -e 'Pkg.init()' \
+#    && echo "${JULIA_PACKAGES}" | sed 's/\s\+/\n/g' > $JULIA_PKGDIR/v${JULIA_VERSION%[.-]*}/REQUIRE \
+#    && ${JULIA_PATH}/bin/julia -e 'Pkg.resolve()' \
+#    # pre-compilation of installed packages
+#    && ${JULIA_PATH}/bin/julia -e 'for pkg in keys(Pkg.installed()); try pkgsym = Symbol(pkg); eval(:(using $pkgsym)); catch; end; end' \
+#    && chmod -R a+rw ${JULIA_PKGDIR}/lib
 
 # Use Python 2.7 with Julia
-ENV PYTHON /usr/local/bin/python
-RUN ${JULIA_PATH}/bin/julia -e 'Pkg.build("PyCall")'
+#ENV PYTHON /usr/local/bin/python
+#RUN ${JULIA_PATH}/bin/julia -e 'Pkg.build("PyCall")'
 
 # create a symlink to be able to call Julia v0.6.4
-RUN ln -s /opt/julia/v0.6/bin/julia /usr/local/bin/julia6
+#RUN ln -s /opt/julia/v0.6/bin/julia /usr/local/bin/julia6
 
 # # Add to path as current version
 # ENV PATH $JULIA_PATH/bin:$PATH
@@ -140,6 +140,9 @@ RUN ln -s /opt/julia/v0.6/bin/julia /usr/local/bin/julia6
 ###################
 ## Julia v1.1.x  ##
 ###################
+
+# Use Python 2.7 with Julia
+ENV PYTHON /usr/local/bin/python
 
 # specify paths for Julia 1.1
 ENV JULIA1_PATH /opt/julia/v1.1.0
@@ -231,35 +234,35 @@ ENV GPAW_SETUP_PATH /opt/share/gpaw/gpaw-setups-${GPAW_SETUP_VERSION}
 # Put Python 3 packages in a virtualenv
 # include `py3` command as a quick alias
 # to activate
-ENV PY3_PATH /opt/python3/
+#ENV PY3_PATH /opt/python3/
 
-RUN virtualenv -p python3 ${PY3_PATH}
-RUN echo "alias py3='source ${PY3_PATH}/bin/activate'" >> /etc/bash.bashrc
+#RUN virtualenv -p python3 ${PY3_PATH}
+#RUN echo "alias py3='source ${PY3_PATH}/bin/activate'" >> /etc/bash.bashrc
 
-ENV PYTHON3 ${PY3_PATH}/bin/python
-ENV PIP3 ${PY3_PATH}/bin/pip
+#ENV PYTHON3 ${PY3_PATH}/bin/python
+#ENV PIP3 ${PY3_PATH}/bin/pip
 
-RUN ${PIP3} install --upgrade pip
-RUN ${PIP3} install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg \
-                                 imolecule sphinx spglib nglview
+#RUN ${PIP3} install --upgrade pip
+#RUN ${PIP3} install --no-cache-dir jupyter numpy scipy matplotlib ase pyamg \
+#                                 imolecule sphinx spglib nglview
 # Requires numpy to install
-RUN ${PIP3} install --no-cache-dir gpaw
+#RUN ${PIP3} install --no-cache-dir gpaw
 
-RUN ${PIP3} install git+https://github.com/libAtoms/matscipy.git
+#RUN ${PIP3} install git+https://github.com/libAtoms/matscipy.git
 
-RUN ${PIP3} install --global-option=build_ext --global-option="-L/opt/OpenBLAS/lib" atomistica
+#RUN ${PIP3} install --global-option=build_ext --global-option="-L/opt/OpenBLAS/lib" atomistica
 
-RUN ${PY3_PATH}/bin/jupyter nbextension enable --py --sys-prefix widgetsnbextension
-RUN ${PY3_PATH}/bin/jupyter nbextension enable --py --sys-prefix nglview
+#RUN ${PY3_PATH}/bin/jupyter nbextension enable --py --sys-prefix widgetsnbextension
+#RUN ${PY3_PATH}/bin/jupyter nbextension enable --py --sys-prefix nglview
 
 # Add kernel to main Jupyter
 # POSIX echo does not take -e already works with newlines
-RUN ln -s ${PY3_PATH}/share/jupyter/kernels/python3 /usr/local/share/jupyter/kernels/ \
-    && echo '{\n "argv": [\n  "'${PYTHON3}'",\n  "-m",\n  "ipykernel_launcher",\n  "-f",\n  "{connection_file}"\n ],\n "display_name": "Python 3",\n "language": "python"\n}' > /usr/local/share/jupyter/kernels/python3/kernel.json
+#RUN ln -s ${PY3_PATH}/share/jupyter/kernels/python3 /usr/local/share/jupyter/kernels/ \
+#    && echo '{\n "argv": [\n  "'${PYTHON3}'",\n  "-m",\n  "ipykernel_launcher",\n  "-f",\n  "{connection_file}"\n ],\n "display_name": "Python 3",\n "language": "python"\n}' > /usr/local/share/jupyter/kernels/python3/kernel.json
 
 # AmberTools (no Amber)
 
-ENV AMBERHOME /opt/amber16/
+#ENV AMBERHOME /opt/amber16/
 
 # Never write the tests to disk (1GB) and remove src (500MB) after compilation
 
@@ -272,8 +275,8 @@ RUN mkdir -p ${AMBERHOME} \
     && ./update_amber --show-applied-patches \
     && ./configure --with-python `which python` --python-install global -noX11 gnu \
     && make install \
-    && ./configure --with-python `which python` --python-install global -noX11 -mpi gnu \
-    && make install \
+ #   && ./configure --with-python `which python` --python-install global -noX11 -mpi gnu \
+ #  && make install \
     && rm -rf ${AMBERHOME}/test ${AMBERHOME}/AmberTools
 
 ENV PATH ${AMBERHOME}/bin:${PATH}
