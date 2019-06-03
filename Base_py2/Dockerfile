@@ -59,8 +59,8 @@ RUN apt-get -y update \
 # non-parallel version.
 RUN git clone https://github.com/xianyi/OpenBLAS.git /tmp/OpenBLAS \
     && cd /tmp/OpenBLAS/ \
-    && make NO_AFFINITY=1 USE_OPENMP=1 NUM_THREADS=32 \
-    && make NO_AFFINITY=1 USE_OPENMP=1 NUM_THREADS=32 install \
+    && make NO_AFFINITY=1 USE_OPENMP=1 NUM_THREADS=32 > /dev/null \
+    && make NO_AFFINITY=1 USE_OPENMP=1 NUM_THREADS=32 install > /dev/null \
     && rm -rf /tmp/OpenBLAS
 
 # Make OpenBLAS the default
@@ -276,10 +276,10 @@ RUN cd ${AMBERHOME} \
     && ./update_amber --show-applied-patches \
     && ./configure --with-python `which python` --python-install global -noX11 gnu \
     && make install \
-    && rm -rf ${AMBERHOME}/test ${AMBERHOME}/AmberTools
+RUN rm -rf ${AMBERHOME}/test ${AMBERHOME}/AmberTools
  #   && ./configure --with-python `which python` --python-install global -noX11 -mpi gnu \
  #  && make install \
-    && rm -rf ${AMBERHOME}/test ${AMBERHOME}/AmberTools
+#    && rm -rf ${AMBERHOME}/test ${AMBERHOME}/AmberTools
 
 ENV PATH ${AMBERHOME}/bin:${PATH}
 
