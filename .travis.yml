@@ -1,0 +1,17 @@
+dist: trusty
+
+services:
+  - docker
+
+jobs:
+  include:
+    - stage: build docker image
+      script:
+        - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+        - docker build -t $DOCKER_USERNAME/quip-base-software .
+        - docker push $DOCKER_USERNAME/quip-base-software
+
+          #notifications:
+          #  email:
+          #    - quip-developers@eng.cam.ac.uk
+
