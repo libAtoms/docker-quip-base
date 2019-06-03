@@ -59,8 +59,8 @@ RUN apt-get -y update \
 # non-parallel version.
 RUN git clone https://github.com/xianyi/OpenBLAS.git /tmp/OpenBLAS \
     && cd /tmp/OpenBLAS/ \
-    && make DYNAMIC_ARCH=1 NO_AFFINITY=1 USE_OPENMP=1 NUM_THREADS=32 \
-    && make DYNAMIC_ARCH=1 NO_AFFINITY=1 USE_OPENMP=1 NUM_THREADS=32 install \
+    && make NO_AFFINITY=1 USE_OPENMP=1 NUM_THREADS=32 \
+    && make NO_AFFINITY=1 USE_OPENMP=1 NUM_THREADS=32 install \
     && rm -rf /tmp/OpenBLAS
 
 # Make OpenBLAS the default
