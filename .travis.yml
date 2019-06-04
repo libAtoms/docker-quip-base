@@ -1,19 +1,21 @@
-dist: trusty
+dist: minimal
 
 services:
   - docker
 
 jobs:
   include:
-    - stage: build docker images
-    - script:
-        - docker pull $DOCKER_USERNAME/quip-base-software
+      stage: "build docker images"
+    - 
+      name: "Python 2 image"
+      script:
         - ln -sf Base_py2/Dockerfile Dockerfile
         - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
         - docker build -t $DOCKER_USERNAME/quip-base-py2 .
         - docker push $DOCKER_USERNAME/quip-base-py2
-    - script:
-        - docker pull $DOCKER_USERNAME/quip-base-py3
+    - 
+      name: "Python 3 image"
+      script:
         - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
         - ln -sf Base_py3/Dockerfile.py3 Dockerfile
         - docker build -t $DOCKER_USERNAME/quip-base-py3 .
