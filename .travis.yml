@@ -16,8 +16,8 @@ jobs:
     - 
       name: "Python 3 image"
       script:
-        - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
         - ln -sf Base_py3/Dockerfile.py3 Dockerfile
+        - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
         - docker build -t $DOCKER_USERNAME/quip-base-py3 .
         - docker push $DOCKER_USERNAME/quip-base-py3
 
