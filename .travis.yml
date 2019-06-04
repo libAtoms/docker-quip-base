@@ -6,21 +6,16 @@ services:
 jobs:
   include:
     - stage: build docker images
-      script:
+    - script:
         - docker pull $DOCKER_USERNAME/quip-base-software
         - ln -sf Base_py2/Dockerfile Dockerfile
         - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
         - docker build -t $DOCKER_USERNAME/quip-base-py2 .
         - docker push $DOCKER_USERNAME/quip-base-py2
-          #- stage: Build Py3 image
-      script:
-        #- docker pull $DOCKER_USERNAME/quip-base-software
+    - script:
+        - docker pull $DOCKER_USERNAME/quip-base-py3
         - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
         - ln -sf Base_py3/Dockerfile.py3 Dockerfile
         - docker build -t $DOCKER_USERNAME/quip-base-py3 .
         - docker push $DOCKER_USERNAME/quip-base-py3
-
-          #notifications:
-          #  email:
-          #    - quip-developers@eng.cam.ac.uk
 
