@@ -262,7 +262,7 @@ ENV GPAW_SETUP_PATH /opt/share/gpaw/gpaw-setups-${GPAW_SETUP_VERSION}
 
 # AmberTools (no Amber)
 
-#ENV AMBERHOME /opt/amber16/
+ENV AMBERHOME /opt/amber16/
 
 # Never write the tests to disk (1GB) and remove src (500MB) after compilation
 
