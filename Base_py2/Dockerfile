@@ -262,7 +262,7 @@ ENV GPAW_SETUP_PATH /opt/share/gpaw/gpaw-setups-${GPAW_SETUP_VERSION}
 
 # AmberTools (no Amber)
 
-ENV AMBERHOME /opt/amber16/
+ENV AMBERHOME /opt/amber16
 
 # Never write the tests to disk (1GB) and remove src (500MB) after compilation
 
@@ -274,7 +274,8 @@ RUN cd ${AMBERHOME} \
     && ./update_amber --show-applied-patches \
     && ./update_amber --update \
     && ./update_amber --show-applied-patches \
-    && ./configure --with-python `which python` --python-install global -noX11 gnu \
+    && ./configure --with-python `which python` --python-install global -noX11 gnu
+RUN cd ${AMBERHOME} \
     && make install \
 RUN rm -rf ${AMBERHOME}/test ${AMBERHOME}/AmberTools
  #   && ./configure --with-python `which python` --python-install global -noX11 -mpi gnu \
