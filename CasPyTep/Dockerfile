@@ -3,6 +3,8 @@ FROM libatomsquip/quip-nogap
 MAINTAINER James Kermode <j.r.kermode@warwick.ac.uk>
 
 # add some packages
+RUN printf "deb http://archive.debian.org/debian/ jessie main\ndeb-src http://archive.debian.org/debian/ jessie main\ndeb http://security.debian.org jessie/updates main\ndeb-src http://security.debian.org jessie/updates main" > /etc/apt/sources.list
+
 RUN apt-get -y update \
     && apt-get upgrade -y \
     && apt-get install -y \
